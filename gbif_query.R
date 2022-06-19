@@ -35,13 +35,19 @@ dir.create(
 
 # ==============================GBIF QUERY======================================
 
-vSpeciesToQuery<- c("Rhinoceros unicornis")
+vSpeciesToQuery<- c("Rhinoceros unicornis","Bubo bengalensis")
 
+# -------------
+# Species : Rhinoceros unicornis
 #Ahmedabad: 23.0225° N, 72.5714° E
 #Tripura: 23.9408° N, 91.9882° E
 # 
 #Amritsar: 31.6340° N, 74.8723° E
 #Trivandrum: 8.5241° N, 76.9366° E
+# -------------
+
+
+
 
 # note that coordinate ranges must be specified this way: "smaller, larger" (e.g. "-5, -2")
 vLongitudeLimits<- "72,91"
@@ -58,16 +64,81 @@ gbif_raw <-
     decimalLatitude = vLatitudeLimits
     )  
 
+
+
+
+# - Contents of Query Results
+lapply(
+  gbif_raw,
+  function(iElement){
+    print(iElement)  
+    
+  }
+)
+
+
+
+# - If we need
 vCitations<- 
   gbif_citation(gbif_raw)
 
 
 #Filteting List Object 
-dtData<-
-  data.table(
-    gbif_raw$data
-    )
 
+
+dtData<-
+  rbindlist(
+    lapply(
+      names(gbif_raw),
+      function(iElement){
+        
+        
+        dtTemp<- data.table(
+          get(
+            "data",
+            get(
+              iElement,
+              gbif_raw)
+          )
+          
+        )
+        
+        return(dtTemp)
+      }
+      ),
+    use.names = T,
+    fill = T
+  )
+
+
+
+
+
+# dtData<-
+#   data.table(
+#     gbif_raw$data
+#     )
+
+if(F){
+  
+  cFileName<- 
+    paste(
+      paste0(cFilePath,"Data"),
+      paste(sapply(unique(dtData$scientificName), paste, collapse="_"), collapse="_"),
+      sep = "/"
+    )
+  
+  save(
+    list = 
+      "dtData",
+    file = 
+      paste0(
+        cFileName,
+        ".RData"
+        )
+    )
+  
+}
 
 
 
@@ -121,13 +192,13 @@ qmplot(
   geom = 
     "point",
   col = 
-    'red',
+    scientificName,
+    # 'red',
   size=
     2,
   alpha = 
     0.7
   )
-
 
 # ggmap(map)+
 # # ggplot()+
@@ -144,3 +215,18 @@ qmplot(
 #       0.7
 #   )
 
+# ===============================GBIF PHOTOS====================================
+
+res<- 
+  occ_search(
+    scientificName = 
+      "Aves",
+      # vSpeciesToQuery[1],
+    mediaType = 'StillImage',
+    limit=10
+    )
+
+gbif_photos(
+  res
+  # which='map'
+)
