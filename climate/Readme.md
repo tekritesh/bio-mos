@@ -76,6 +76,6 @@ Brazil:
 
 
 ## Sample Upload
- -  I took the oppurtunityh to stitch gbif with climate data and upload it [here](https://console.cloud.google.com/bigquery?project=molten-kit-354506&ws=!1m4!1m3!3m2!1smolten-kit-354506!2ssample_gbif_climate).
+ -  I took the oppurtunity to stitch gbif with climate data and upload it [here](https://console.cloud.google.com/bigquery?project=molten-kit-354506&ws=!1m4!1m3!3m2!1smolten-kit-354506!2ssample_gbif_climate).
  ![image](https://user-images.githubusercontent.com/65660549/175912109-83a88247-c0d8-40ac-b198-fbae3210072a.png)
 
