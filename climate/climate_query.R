@@ -16,8 +16,8 @@ setorder(dtNames,abbr_eng)
 
   
 dtStations = nearest_stations_ogimet(
-                          # country ="United+Kingdom",
-                            point = c(4.951,51.99),
+                          country ="United+Kingdom",
+                            # point = c(4.951,51.99),
                             no_of_stations = 10000, 
                             add_map = TRUE)
 

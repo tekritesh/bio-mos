@@ -180,4 +180,11 @@ save(
     '/mnt/Work/PersonalData/Processed/GBIF/SampleClimate.Rdata'
 )
 
+write.csv(
+  dtResult,
+    file = 
+      '/mnt/Work/PersonalData/Processed/GBIF/SampleClimate.csv',
+  row.names = F
+)
+
 
