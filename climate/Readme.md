@@ -18,6 +18,15 @@
 
 1. Is it available for the UK, Brazil/India?
    - Yes
+UK:
+![image](https://user-images.githubusercontent.com/65660549/175902238-7db156b9-0201-4dfb-9482-25df047f3335.png)
+India:
+![image](https://user-images.githubusercontent.com/65660549/175902426-c4e8ba9e-4a29-419e-8d83-f8dccdfcfbf5.png)
+
+Brazil:
+![image](https://user-images.githubusercontent.com/65660549/175902367-7c9017a4-dfd0-43ef-8121-886354d4462b.png)
+
+
 
 2. Granularity (is it a pin point location?, Rounded coordinates?...)
    - Depends  upon the spread of stations
@@ -31,7 +40,8 @@
     - Not sure of exact size but it is lot of data to be downloaded entirely, we need to subset by space and time
     
 2. Available columns and columns of interest
-    
+    ![image](https://user-images.githubusercontent.com/65660549/175902043-737b6d83-cddd-47f6-9391-0c3e71ce8058.png)
+
    
         
 3. Missing data (amount and years/locations missing)
@@ -63,3 +73,7 @@
     
 4. Any limits on how much data we can download?
     - Not sure yet
+
+
+## Sample Upload
+ -  I took the oppurtunityh to stitch gbif with climate data and upload it [here](https://console.cloud.google.com/bigquery?project=molten-kit-354506&ws=!1m4!1m3!3m2!1smolten-kit-354506!2ssample_gbif_climate).
