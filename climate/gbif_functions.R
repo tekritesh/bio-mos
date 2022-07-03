@@ -1,4 +1,11 @@
 
+require(data.table)
+require(ggplot2)
+require(ggmap)
+require(geosphere)
+require(logger)
+
+
 # ============================= GBIF QUERY======================================
 fGetSpecies<-function(
   vSpeciesNames="",
@@ -143,7 +150,7 @@ fGetClimateStations<-function(
       paste0("Getting Data for:",
              no_of_stations,
              " Stations around: [",
-             centre_lat_deg,
+             centre_lon_deg,
              ",",
              centre_lat_deg,
              "]"
@@ -235,11 +242,14 @@ fGetHourlyWeatherData<-function(
           tryCatch(
             expr = {
               
-              dtTemp<- 
-                meteo_noaa_hourly(
-                  station = iStation,
-                  year = as.character(year)
-                )
+              invisible(
+                dtTemp<- 
+                  meteo_noaa_hourly(
+                    station = iStation,
+                    year = as.character(year)
+                  ) 
+              )
+              
               
               dtTemp<-data.table(dtTemp)
               # print(head(dtTemp))
