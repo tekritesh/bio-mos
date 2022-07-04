@@ -130,3 +130,5 @@ dmypy.json
 .pyre/
 .Rproj.user
 .Rhistory
+
+*.json
