@@ -2,6 +2,7 @@ from google.cloud import bigquery
 from pandas import DataFrame
 import os
 
+PATH = '/Users/advikabattini/Desktop/gbif/bio-conservation/airflow/dags/gbif-challenge-1cd64d18b349.json'
 
 schema_dict = {
 "gbif-challenge.airflow_uploads.gbif_occurrence": [bigquery.SchemaField("key", "INTEGER"),
@@ -67,6 +68,8 @@ schema_dict = {
                                                     bigquery.SchemaField("eventDate", "TIMESTAMP"),
                                                     bigquery.SchemaField("avg_radiance", "FLOAT"),
                                                     bigquery.SchemaField("avg_deg_urban", "FLOAT"),
+                                                    bigquery.SchemaField("scientificName", "STRING"),
+                                                    bigquery.SchemaField("is_invasive", "BOOLEAN"),
                                                 ]
 
 }
@@ -80,7 +83,7 @@ class CustomBigqueryInsert():
     def __init__(self, dataframe, table_id) -> None:
         self.dataframe = dataframe
         self.table_id = table_id
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/advikabattini/Desktop/gbif/bio-conservation/airflow/dags/gbif-challenge-1cd64d18b349.json'
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = PATH
 
     def load(self, schema) -> None:
         #connect to BigQuery
@@ -98,14 +101,14 @@ class CustomBigqueryInsert():
         table = client.get_table(self.table_id)
         print(
             "Loaded {} rows and {} columns to {}".format(
-                table.num_rows, len(table.schema), self.table_id
+                self.dataframe.shape[0], len(table.schema), self.table_id
             )
         )
 
 class CustomBigqueryQuery():
 
     def __init__(self) -> None:
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/advikabattini/Desktop/gbif/bio-conservation/airflow/dags/gbif-challenge-1cd64d18b349.json'
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = PATH
 
     def query(self, sql):
         client = bigquery.Client()

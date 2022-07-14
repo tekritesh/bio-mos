@@ -109,5 +109,5 @@ class HumanInterference():
                                             axis=1)
 
         return self.df[['decimalLatitude', 'decimalLongitude', 
-        'countryCode', 'eventDate',  'avg_radiance', 'avg_deg_urban']]
+        'countryCode', 'eventDate',  'avg_radiance', 'avg_deg_urban', 'scientificName']].copy()
             
