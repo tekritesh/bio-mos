@@ -8,6 +8,7 @@ Refer : https://python-poetry.org/docs/
 #### Install Local Dependencies
 This should create a local env variable and install all the libs
 ```
+cd gbif
 poetry install
 ```
 
