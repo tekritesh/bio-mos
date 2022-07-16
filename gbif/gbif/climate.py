@@ -17,6 +17,11 @@ class GetClimateData():
         """Function to Get Interpolated climate data for lat,lon,altitude for a given date
         Refer : https://dev.meteostat.net/python/point.html#api for a complete picture
 
+        lat_deg(float): latitude coordinates in degrees
+        lon_deg(float): longitude coordinates in degrees
+        altitude(float): altitude of the geo co-ordinate in meters
+        start_date(string): start date for climate data
+        end_date(string): end date for climate data
         """
         start_date = datetime.fromisoformat(start_date)
         end_date = datetime.fromisoformat(end_date)
