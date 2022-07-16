@@ -1,6 +1,7 @@
 from gbif import __version__
 from gbif import climate
 from gbif import human_interference
+from gbif import species
 import logging
 
 def test_version():
@@ -26,6 +27,13 @@ def test_human_interferance_api():
         
     assert round(radiance,2) ==11.75
 
+def test_species_api():
+    inst = species.Occurence()
+    data= inst.get_occurrences(
+        eventDate='2022-01-02',
+        country="GB"
+        )
+    assert data['key'].values[0] == 3436650793
 
 
 
