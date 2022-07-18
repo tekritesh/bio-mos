@@ -45,7 +45,7 @@ class SoilDataParser:
 
     def get_bounding_box(self, latitude, longitude, projection_epsg):
         r_earth = 6371000.0
-        displacement = 250
+        displacement = 1000
         latitude_max = latitude + (displacement / r_earth) * (180 / pi)
         longitude_max = longitude + (displacement / r_earth) * (180 / pi) / cos(latitude * pi / 180)
 
