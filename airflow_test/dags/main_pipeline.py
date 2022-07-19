@@ -4,9 +4,8 @@ from airflow.contrib.operators.bigquery_check_operator import BigQueryCheckOpera
 
 from datetime import datetime, timedelta
 import pandas as pd
-from gbif_modules import HumanInterference, get_occurrences
+from gbif_modules import HumanInterference, get_occurrences, GetClimateData, LandCover, SoilData
 from bigquery_load import CustomBigqueryInsert, CustomBigqueryQuery, get_schema
-
 
 def get_gbif_daily(ds, country):
     df = get_occurrences(ds, country) ##ds is airflows default parameter for execution_date
@@ -44,6 +43,63 @@ def get_human_daily(ds):
         load = CustomBigqueryInsert(df_out, table_id)
         load.load(schema=get_schema(table_id))
 
+def get_climate_daily(ds):
+    query = CustomBigqueryQuery()
+
+    sql= f"""SELECT * 
+             FROM `gbif-challenge.airflow_uploads.gbif_occurrence` 
+             WHERE DATE(eventDate) = '{ds}'
+             AND countryCode IN ('BR', 'GB')""" ##hardcoding these two countries for demo
+
+    df = query.query(sql)
+
+    if df.shape[0] > 0: ## check if gbif returned any rows.
+        climate_df = GetClimateData(df)
+
+        df_out = climate_df.climate_wrapper()
+
+        table_id = "gbif-challenge.airflow_uploads.climate_covariates"
+        load = CustomBigqueryInsert(df_out, table_id)
+        load.load(schema=get_schema(table_id))
+
+def get_land_cover_daily(ds):
+    query = CustomBigqueryQuery()
+
+    sql= f"""SELECT * 
+             FROM `gbif-challenge.airflow_uploads.gbif_occurrence` 
+             WHERE DATE(eventDate) = '{ds}'
+             AND countryCode IN ('BR', 'GB')""" ##hardcoding these two countries for demo
+
+    df = query.query(sql)
+
+    if df.shape[0] > 0: ## check if gbif returned any rows.
+        land_df = LandCover(df)
+
+        df_out = land_df.land_cover_wrapper()
+
+        table_id = "gbif-challenge.airflow_uploads.land_cover"
+        load = CustomBigqueryInsert(df_out, table_id)
+        load.load(schema=get_schema(table_id))
+
+def get_soil_daily(ds):
+    query = CustomBigqueryQuery()
+
+    sql= f"""SELECT * 
+             FROM `gbif-challenge.airflow_uploads.gbif_occurrence` 
+             WHERE DATE(eventDate) = '{ds}'
+             AND countryCode IN ('BR', 'GB')""" ##hardcoding these two countries for demo
+
+    df = query.query(sql)
+
+    if df.shape[0] > 0: ## check if gbif returned any rows.
+        soil_df = SoilData(df)
+
+        df_out = soil_df.soil_wrapper()
+
+        table_id = "gbif-challenge.airflow_uploads.soil_type"
+        load = CustomBigqueryInsert(df_out, table_id)
+        load.load(schema=get_schema(table_id))
+
 
 
 with DAG(
@@ -74,16 +130,28 @@ with DAG(
     schedule_interval=timedelta(days=1),
     start_date=datetime(2022, 4, 4),
     catchup=False,
-    tags=['draft'],
+    tags=['version_1'],
 ) as dag:
 
-    pull_occ_br = PythonOperator(task_id='pull_occ', python_callable=get_gbif_daily,
+    pull_occ_br = PythonOperator(task_id='pull_occ_br', python_callable=get_gbif_daily,
                              op_kwargs={###"eventDate":'2022-04-04',
                                         "country": 'BR'})
 
-    pull_human	= PythonOperator(task_id='pull_human', python_callable=get_human_daily)                                 )
+    pull_occ_gb = PythonOperator(task_id='pull_occ_gb', python_callable=get_gbif_daily,
+                             op_kwargs={"country": 'GB'})
 
-    pull_occ_br >> [pull_human]
+    pull_human	= PythonOperator(task_id='pull_human', python_callable=get_human_daily) 
+    pull_climate = PythonOperator(task_id='pull_climate', python_callable=get_climate_daily)      
+    pull_land_cover = PythonOperator(task_id='pull_land_cover', python_callable=get_land_cover_daily)  
+    pull_soil = PythonOperator(task_id='pull_soil', python_callable=get_soil_daily)                                       
+                                     
+     ##airflow does not support list to list operands, so breaking it into two                            
+    pull_occ_br >> [pull_human, pull_climate, pull_land_cover, pull_soil] ## >> combine_df
+    pull_occ_gb >> [pull_human, pull_climate, pull_land_cover, pull_soil] ## >> combine_df
+
+
+
+
     
 
 
