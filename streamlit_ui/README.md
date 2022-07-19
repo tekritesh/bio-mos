@@ -1,4 +1,4 @@
-# Running Streamlit instrunction
+# Running Streamlit instructions
 
 ## Package installations:
 1. pip install streamlit
