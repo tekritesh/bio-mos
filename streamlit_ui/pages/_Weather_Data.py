@@ -4,6 +4,8 @@ import numpy as np
 import pydeck as pdk
 import os
 from google.cloud import bigquery
+import leafmap.foliumap as leafmap
+import geopandas
 
 st.set_page_config(layout="wide",
                    page_title="Weather Data",
@@ -17,7 +19,7 @@ bigquery_client = bigquery.Client()
 
 # Write Query on BQ
 QUERY = """
-SELECT  * FROM `molten-kit-354506.sample_gbif_climate.climate_bulk_download_BZ_2022`
+SELECT  * FROM `molten-kit-354506.sample_gbif_climate.climate_bulk_download_BZ_2022` LIMIT 5000
   """
 
 Query_Results = bigquery_client.query(QUERY)
@@ -44,3 +46,17 @@ st.pydeck_chart(pdk.Deck(
          ),
      ],
  ))
+
+m = leafmap.Map(tiles="stamentoner")
+m.add_basemap()
+m.set_center(-43.374, -22.916, 5)
+m.add_heatmap(
+    df,
+    latitude="lat",
+    longitude="lon",
+    value="t2m",
+    name="Heat map",
+    radius=20,
+)
+m.add_points_from_xy(df, popup=["t2m"], x='lon', y='lat', layer_name="Temperature Data")
+m.to_streamlit(width=800, height=800)

@@ -22,6 +22,9 @@ Query_Results = bigquery_client.query(QUERY)
 df = Query_Results.to_dataframe()
 
 m = leafmap.Map(tiles="stamentoner")
+m.add_basemap()
+m.set_center(-43.374, -22.916, 5)
+
 m.add_heatmap(
     df,
     latitude="decimalLatitude",
@@ -30,4 +33,4 @@ m.add_heatmap(
     name="Heat map",
     radius=20,
 )
-m.to_streamlit(width=700, height=500)
+m.to_streamlit(width=800, height=800)
