@@ -100,6 +100,103 @@ def get_soil_daily(ds):
         load = CustomBigqueryInsert(df_out, table_id)
         load.load(schema=get_schema(table_id))
 
+def push_combined_data_bigquery(ds):
+    query = CustomBigqueryQuery()
+##can also use sql insert into here instead of custom python insert, INSERT INTO `gbif-challenge.airflow_uploads.gbif_combined` 
+    sql= f"""SELECT
+                occ.key,
+                occ.publishingCountry,
+                occ.basisOfRecord,
+                occ.occurrenceStatus,
+                occ.scientificName,
+                occ.acceptedScientificName,
+                occ.kingdom,
+                occ.phylum,
+                occ.order,
+                occ.family,
+                occ.genus,
+                occ.species,
+                occ.genericName,
+                occ.specificEpithet,
+                occ.taxonRank,
+                occ.taxonomicStatus,
+                occ.iucnRedListCategory,
+                occ.decimalLongitude,
+                occ.decimalLatitude,
+                occ.coordinateUncertaintyInMeters,
+                occ.eventDate,
+                occ.issues,
+                occ.class,
+                occ.countryCode,
+                occ.country,
+                occ.datasetName,
+                hum.avg_radiance,
+                hum.avg_deg_urban,
+                hum.is_invasive,
+                land.land_cover_label,
+                cli.tavg,
+                cli.tmin,
+                cli.tmax,
+                cli.prcp,
+                cli.snow,
+                cli.wdir,
+                cli.wspd,
+                cli.wpgt,
+                cli.pres,
+                cli.tsun,
+                soil.phh2o_0_5cm_mean,
+                soil.bdod_0_5cm_mean,
+                soil.cec_0_5cm_mean,
+                soil.cfvo_0_5cm_mean,
+                soil.clay_0_5cm_mean,
+                soil.nitrogen_0_5cm_mean,
+                soil.sand_0_5cm_mean,
+                soil.silt_0_5cm_mean,
+                soil.soc_0_5cm_mean,
+                soil.ocd_0_5cm_mean
+                FROM
+                (SELECT * 
+                FROM `gbif-challenge.airflow_uploads.gbif_occurrence` 
+                WHERE
+                    DATE(eventDate) = '{ds}'
+                    AND countryCode IN ('BR', 'GB')
+                ) as occ
+                LEFT JOIN (SELECT * 
+                            FROM `gbif-challenge.airflow_uploads.human_interference` 
+                            WHERE
+                                DATE(eventDate) = '{ds}'
+                                AND countryCode IN ('BR', 'GB')
+                ) as hum
+                USING (key, decimalLatitude, decimalLongitude, eventDate, countryCode)
+                LEFT JOIN (SELECT * 
+                            FROM `gbif-challenge.airflow_uploads.climate_covariates` 
+                            WHERE
+                                DATE(eventDate) = '{ds}'
+                                AND countryCode IN ('BR', 'GB')
+                ) as cli
+                USING (key, decimalLatitude, decimalLongitude, eventDate, countryCode)
+                LEFT JOIN (SELECT * 
+                            FROM `gbif-challenge.airflow_uploads.land_cover` 
+                            WHERE
+                                DATE(eventDate) = '{ds}'
+                                AND countryCode IN ('BR', 'GB')
+                ) as land
+                USING (key, decimalLatitude, decimalLongitude, eventDate, countryCode)
+                LEFT JOIN (SELECT * 
+                            FROM `gbif-challenge.airflow_uploads.soil_type` 
+                            WHERE
+                                DATE(eventDate) = '{ds}'
+                                AND countryCode IN ('BR', 'GB')
+                ) as soil
+                USING (key, decimalLatitude, decimalLongitude, eventDate, countryCode)
+             """ 
+
+    df = query.query(sql)
+
+    if df.shape[0] > 0: ## check if gbif returned any rows.
+        table_id = "gbif-challenge.airflow_uploads.gbif_combined"
+        load = CustomBigqueryInsert(df, table_id)
+        load.load(schema=get_schema(table_id))
 
 
 with DAG(
@@ -107,13 +204,13 @@ with DAG(
     # These args will get passed on to each operator
     # You can override them on a per-task basis during operator initialization
     default_args={
-        'depends_on_past': True,
+        #'depends_on_past': True,
         'email': ['airflow@example.com'],
         'email_on_failure': False,
         'email_on_retry': False,
         'retries': 1,
-        'retry_delay': timedelta(minutes=3),
-        'end_date': datetime(2022, 4, 5),
+        'retry_delay': timedelta(minutes=2),
+        'end_date': datetime(2022, 5, 31),
         # 'queue': 'bash_queue',
         # 'pool': 'backfill',
         # 'priority_weight': 10,
@@ -143,11 +240,13 @@ with DAG(
     pull_human	= PythonOperator(task_id='pull_human', python_callable=get_human_daily) 
     pull_climate = PythonOperator(task_id='pull_climate', python_callable=get_climate_daily)      
     pull_land_cover = PythonOperator(task_id='pull_land_cover', python_callable=get_land_cover_daily)  
-    pull_soil = PythonOperator(task_id='pull_soil', python_callable=get_soil_daily)                                       
+    pull_soil = PythonOperator(task_id='pull_soil', python_callable=get_soil_daily)  
+
+    combine_df = PythonOperator(task_id='combine_df', python_callable=push_combined_data_bigquery)                                      
                                      
      ##airflow does not support list to list operands, so breaking it into two                            
-    pull_occ_br >> [pull_human, pull_climate, pull_land_cover, pull_soil] ## >> combine_df
-    pull_occ_gb >> [pull_human, pull_climate, pull_land_cover, pull_soil] ## >> combine_df
+    pull_occ_br >> [pull_human, pull_climate, pull_land_cover, pull_soil]  >> combine_df
+    pull_occ_gb >> [pull_human, pull_climate, pull_land_cover, pull_soil]  >> combine_df
 
 
 
