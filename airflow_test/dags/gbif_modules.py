@@ -11,6 +11,9 @@ from datetime import timedelta, datetime
 from math import cos, pi
 
 
+service_account = '292293468099-compute@developer.gserviceaccount.com'
+credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-deed5b20a659.json')
+
 def get_occurrences(eventDate, country, offset = 0):
     """function to get the occurrences from gbif. max rows in one call is 300; we use a loop
     args:
@@ -45,7 +48,7 @@ class HumanInterference():
     """
     def __init__(self, df):
         try:
-            ee.Initialize()
+            ee.Initialize(credentials)
         except Exception as e:
             ee.Authenticate()
             ee.Initialize()
@@ -181,7 +184,7 @@ class SoilData():
 
     def __init__(self, df):
         try:
-            ee.Initialize()
+            ee.Initialize(credentials)
         except Exception as e:
             ee.Authenticate()
             ee.Initialize()
@@ -251,7 +254,7 @@ class SoilData():
 class LandCover():
     def __init__(self, df):
         try:
-            ee.Initialize()
+            ee.Initialize(credentials)
         except Exception as e:
             ee.Authenticate()
             ee.Initialize()

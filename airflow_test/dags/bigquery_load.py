@@ -2,7 +2,7 @@ from google.cloud import bigquery
 from pandas import DataFrame
 import os
 
-PATH = '/Users/advikabattini/Desktop/gbif/bio-conservation/airflow/dags/gbif-challenge-1cd64d18b349.json'
+PATH = '/mnt/.cred/gbif-challenge-deed5b20a659.json'
 
 schema_dict = {
 "gbif-challenge.airflow_uploads.gbif_occurrence": [bigquery.SchemaField("key", "INTEGER"),
