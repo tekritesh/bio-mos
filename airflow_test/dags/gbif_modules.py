@@ -12,7 +12,7 @@ from math import cos, pi
 
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
-credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-deed5b20a659.json')
+credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json')
 
 def get_occurrences(eventDate, country, offset = 0):
     """function to get the occurrences from gbif. max rows in one call is 300; we use a loop
