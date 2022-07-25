@@ -242,11 +242,13 @@ with DAG(
     pull_land_cover = PythonOperator(task_id='pull_land_cover', python_callable=get_land_cover_daily)  
     pull_soil = PythonOperator(task_id='pull_soil', python_callable=get_soil_daily)  
 
-    combine_df = PythonOperator(task_id='combine_df', python_callable=push_combined_data_bigquery)                                      
+    #combine_df = PythonOperator(task_id='combine_df', python_callable=push_combined_data_bigquery)                                      
                                      
      ##airflow does not support list to list operands, so breaking it into two                            
-    pull_occ_br >> [pull_human, pull_climate, pull_land_cover, pull_soil]  >> combine_df
-    pull_occ_gb >> [pull_human, pull_climate, pull_land_cover, pull_soil]  >> combine_df
+    # pull_occ_br >> [pull_human, pull_climate, pull_land_cover, pull_soil]  >> combine_df
+    # pull_occ_gb >> [pull_human, pull_climate, pull_land_cover, pull_soil]  >> combine_df
+    pull_occ_br >> [pull_human, pull_climate, pull_land_cover, pull_soil]  
+    pull_occ_gb >> [pull_human, pull_climate, pull_land_cover, pull_soil]  
 
 
 
