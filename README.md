@@ -132,15 +132,15 @@ Apache airflow is a data orchestration tool to schedule jobs and maintain scalab
 
 Our pipeline fetches daily data from the GBIF API. The next steps are parallel data fetching and integration of our varied data sources (modular and can be easily extended to include more sources/eliminate unimportant ones) corresponding the GBIF temporal and spatial data. Our final step is to combine all the sources which can be queried by our visualization website or the end user.&#x20;
 
-[](https://lucid.app/documents/view/075dc236-c845-4621-97e3-f1d94521c351)
+![Pipeline](assets/pipeline.png)
 
 The figure below demonstrates our pipeline run for a select number of days. The pipeline will be set to run on a daily schedule and past data can be backfilled once all the parameters are finalized and the pipeline is moved to the cloud.&#x20;
 
 <br>
 
-![Screen Shot 2022-07-19 at 3.01.04 PM.png](<https://files.nuclino.com/files/bd30d051-ff60-44de-a52f-58a7b20f0f80/Screen Shot 2022-07-19 at 3.01.04 PM.png>)
+![Airflow Runs](assets/airflow1.png)
 
-![Screen Shot 2022-07-19 at 3.01.14 PM.png](<https://files.nuclino.com/files/972e7c8d-e978-453d-b4a9-992d87125bd6/Screen Shot 2022-07-19 at 3.01.14 PM.png>)
+![Airflow Calendar](assets/airflow2.png)
 
 # Website and UX
 
