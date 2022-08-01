@@ -12,6 +12,7 @@ import panel as pn
 import param
 import plotly.express as px
 import plotly.graph_objects as go
+from wordcloud import WordCloud
 
 
 from meteostat import Point, Daily
@@ -122,7 +123,7 @@ def occ_plot(df=df, species='Callicore sorana'):
     )
 
     return fig
-# Generate a landcove background
+# Generate a landcover background
 def create_land_cover_bg(df, query=None):
     if query:
         # filter the dataframe to the selected point
@@ -142,6 +143,25 @@ def create_land_cover_bg(df, query=None):
         fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
 
         fig.data[0]['textfont']['size'] = 30
+
+        return fig
+
+# Generate a landcove background
+def create_display(df, query=None):
+    if query:
+        # filter the dataframe to the selected point
+        df = df.query(query)
+        df = df.head(1)
+        # df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+        number = pn.indicators.Number(
+            name='Avg Radiance', value=df['avg_radiance'], format='{value}%',
+            colors=[(33, 'green'), (66, 'gold'), (100, 'red')]
+        )
+        fig=  pn.Row(
+            number.clone(name='Deg Urban',value=df['avg_deg_urban']),
+            # number.clone(name='Land Cover',value=df['land_cover_label']),
+            # number.clone(name='Land Cover',value=df['land_cover_label'])
+        )
 
         return fig
 
@@ -165,6 +185,36 @@ def create_cards(df, query=None):
         fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
 
         fig.data[0]['textfont']['size'] = 30
+
+        return fig
+
+## function for creating the wordcloud to show specific point wise values 
+def create_wordcloud(df, query=None):
+    if query:
+        # filter the dataframe to the selected point
+        df = df.query(query)
+        df = df.head(1)
+        df = pd.melt(
+            df.head(1),
+            value_vars=[
+                'land_cover_label',
+                'snow',
+                'is_invasive',
+                'species',
+                'country'])
+        df['count']=[1,1,1,1,1]
+        df['Title']= df['variable'].astype(str) +":" +df['value'].astype(str)
+
+        df=df[['Title','count']]
+
+        d = {a: x for a, x in df.values}
+        wc = WordCloud(
+            background_color='white',
+            colormap='Set2',
+            width=400,
+            height=700)
+        wc.fit_words(d)
+        fig = wc.to_image()
 
         return fig
 
@@ -298,6 +348,7 @@ def _update_after_click_on_1(click_data):
         lon = click_data['points'][0]['lon']
         plot_pie.object = create_pie(df, f'decimalLatitude == {lat}')
         plot_cards.object = create_cards(df, f'decimalLatitude == {lat}')
+        display_workcloud.object = create_wordcloud(df, f'decimalLatitude == {lat}')
         # plot_pie.object = create_cards(df, f'decimalLatitude == {lat}')
         
 ## function to download dataframe when button is pressed
@@ -333,6 +384,7 @@ def fetch_data(input):
             plot_cards.object = create_cards(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
             plot_pie.object = create_pie(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
             plot_trends.object = create_trends(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
+            display_workcloud = create_wordcloud(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
 
             plot_species.object = species_counts(df)
             display_data.value = df[cols]
@@ -367,6 +419,13 @@ file_download_csv = pn.widgets.FileDownload(filename="gbif_covariates.csv", call
 ###what function to run when update buttton is pressed
 button.on_click(fetch_data)
 
+#instantiate display
+display_stickers = create_display(df, f'decimalLatitude == -22.258903')
+
+
+#instantiate wordcloud
+display_workcloud =  pn.pane.PNG(create_wordcloud(df, f'decimalLatitude == -22.258903'))
+
 
 
 ############## The main template to render, sidebar for text
@@ -398,24 +457,28 @@ template.main[1:5, 6:12]=pn.Tabs(('GBIF',pn.Column(plot_scatter)),
 template.main[1:5,:6]= pn.Column('### Species Counts', plot_species, height=400)
 
 number = pn.indicators.Number(
-    name='Failure Rate', value=72, format='{value}%',
+    name='Failure Rate', value=72, format='{value}',
     # color_discrete_sequence=px.colors.qualitative.Antique,
     colors=[(33, 'green'), (66, 'gold'), (100, 'red')]
 )
 template.main[5:6, :] = pn.Row(
-    number.clone(name='Clay',value=10),
-    number.clone(name='Radiance',value=42),
-    number.clone(name='Sand',value=93),
-    number.clone(name='Silt',value=5),
-    number.clone(name='CO2',value=99)
+    number.clone(name='Deg Urban',value=10,format='{value}%'),
+    number.clone(name='Radiance',value=42,format='{value}%'),
+    number.clone(name='Avg Temp',value=23,format='{value}C'),
+    number.clone(name='WindSpeed',value=5,format='{value}mps'),
+    number.clone(name='Precipitation',value=99)
     ) 
+# template.main[5:6, :] = pn.Row(display_stickers)
+
 
 template.main[6:9, :6] = pn.Column(plot_pie)
 
 template.main[6:9, 6:12] = pn.Column(plot_cards)
 # template.main[6:9, 6:12] = pn.Column(plot_trends)
 
-template.main[9:13, :12]= pn.Column(file_download_csv, display_data, height=200, width = 400)
+template.main[9:13, :8]= pn.Column(file_download_csv, display_data, height=200, width = 200)
+
+template.main[9:13, 8:12] = pn.Column(display_workcloud)
 
 
 ###color examples
