@@ -18,7 +18,8 @@ from wordcloud import WordCloud
 from meteostat import Point, Daily
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
+# df = pd.read_csv("test_combined.csv")
 
 
 from google.cloud import bigquery
@@ -224,36 +225,33 @@ def create_wordcloud(df, query=None):
 def create_pie(df, query=None):
     if query:
         ## filter the dataframe to the selected point
-        df = df.query(query)
-        
-        # Standardizing Units to g/Kg
-        df['soc_0_5cm_mean']=df['soc_0_5cm_mean']*0.10
-        df['nitrogen_0_5cm_mean']=df['nitrogen_0_5cm_mean']*0.01
-        df = df.dropna()
-
-
-        df = pd.melt(
-                    df.head(1),
-                    value_vars=['clay_0_5cm_mean',
-                                'silt_0_5cm_mean',
-                                'sand_0_5cm_mean',
-                                'soc_0_5cm_mean',
-                                'nitrogen_0_5cm_mean']
-                    )
-
+        df = df.query(query).copy()
         
         if len(df) == 0:
             df = pd.read_csv("soil_temp.csv")
-        
-        df['variable']=df['variable'].replace({
-            'clay_0_5cm_mean':'clay %',
-            'silt_0_5cm_mean':'silt %',
-            'sand_0_5cm_mean':'sand %',
-            'soc_0_5cm_mean':'organic carbon %',
-            'nitrogen_0_5cm_mean':'nitrogen %',
-            
-            
-        })
+
+        else:
+        # Standardizing Units to g/Kg
+            df['soc_0_5cm_mean']=df['soc_0_5cm_mean']*0.10
+            df['nitrogen_0_5cm_mean']=df['nitrogen_0_5cm_mean']*0.01
+
+            df = pd.melt(
+                        df.head(1),
+                        value_vars=['clay_0_5cm_mean',
+                                    'silt_0_5cm_mean',
+                                    'sand_0_5cm_mean',
+                                    'soc_0_5cm_mean',
+                                    'nitrogen_0_5cm_mean']
+                        )
+
+            df['variable']=df['variable'].replace({
+                'clay_0_5cm_mean':'clay %',
+                'silt_0_5cm_mean':'silt %',
+                'sand_0_5cm_mean':'sand %',
+                'soc_0_5cm_mean':'organic carbon %',
+                'nitrogen_0_5cm_mean':'nitrogen %',          
+            })
+
         fig = px.pie(
             df,
             values='value',
@@ -294,21 +292,20 @@ def create_trends(df, query=None):
         
 ### placeholder histogram plot of species counts
 def species_counts(df=df):
-    df=  df[df['country'] == 'Brazil']
-    df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Occurence Count')
-    df_temp = df_temp.sort_values(by = ['Occurence Count'],ascending=[False])
+    # df=  df[df['country'] == 'Brazil']
+    df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Occurrence Count')
+    df_temp = df_temp.sort_values(by = ['Occurrence Count'],ascending=[False])
     
     fig = px.bar(
         df_temp.head(10),
-        x = 'Occurence Count',
+        x = 'Occurrence Count',
         y="Species",
         color="Species",
         color_discrete_sequence=
         # px.colors.cyclical.IceFire,
         px.colors.qualitative.Antique,
-        # color_discrete_sequence=['#5cb25d'],
-        text = 'Occurence Count',
-        title = 'Occurence Counts for window <>'
+        text = 'Occurrence Count',
+        title = 'Occurrence Counts for window <>'
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
