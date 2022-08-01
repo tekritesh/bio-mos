@@ -23,8 +23,8 @@ from google.cloud import bigquery
 client = bigquery.Client()
 
 
-df = pd.read_csv('gbif_combined.csv')
-# df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
+# df = pd.read_csv('gbif_combined.csv')
+df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
 
 # df.head()
 
@@ -61,11 +61,13 @@ def occ_plot(df=df, species='Callicore sorana'):
         df,
         lat="decimalLatitude",
         lon="decimalLongitude",
-        color="genericName",
+        # color="genericName",
         hover_name= 'genericName',
         size = 'point_size',
         hover_data= ['species','decimalLongitude','decimalLatitude'],
-        color_discrete_sequence=['#5cb25d'],
+        # color_discrete_sequence=['#5cb25d'],
+        # color_discrete_sequence=px.colors.qualitative.Bold,
+        color_discrete_sequence=px.colors.qualitative.Antique,
         # color_continuous_scale=px.colors.cyclical.IceFire,
         zoom=6,
         mapbox_style="open-street-map")
@@ -91,14 +93,14 @@ def occ_plot(df=df, species='Callicore sorana'):
                 direction = "left",
                 buttons=list([
                     dict(
-                        args=["color", "genericName"],
+                        args=["color",'#ffffff'],
                         label="Occurence",
-                        method="restyle"
+                        method="update"
                     ),
                     dict(
-                        args=["color", "prcp"],
+                        args=["color", "#aaaaaa"],
                         label="Soil",
-                        method="restyle"
+                        method="update"
                     )
                 ]),
                 pad={"r": 10, "t": 10},
@@ -120,16 +122,17 @@ def occ_plot(df=df, species='Callicore sorana'):
     )
 
     return fig
-
-
-## function for creating the treemap to show specific point wise values 
-def create_cards(df, query=None):
+# Generate a landcove background
+def create_land_cover_bg(df, query=None):
     if query:
-        ## filter the dataframe to the selected point
+        # filter the dataframe to the selected point
         df = df.query(query)
-        df = pd.melt(df, value_vars=['avg_radiance', 'is_invasive', 'avg_deg_urban'])
+        df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+        if len(df) ==0:
+            df = pd.read_csv('weather.csv')
         fig = px.treemap(df, path=['variable'], values='value')
         fig.data[0].textinfo = 'label+value'
+        
 
         level = 1 # write the number of the last level you have
         lvl_clr = "#5cb25d"
@@ -139,7 +142,80 @@ def create_cards(df, query=None):
         fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
 
         fig.data[0]['textfont']['size'] = 30
-        return  fig
+
+        return fig
+
+## function for creating the treemap to show specific point wise values 
+def create_cards(df, query=None):
+    if query:
+        # filter the dataframe to the selected point
+        df = df.query(query)
+        df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+        if len(df) ==0:
+            df = pd.read_csv('weather.csv')
+        fig = px.treemap(df, path=['variable'], values='value')
+        fig.data[0].textinfo = 'label+value'
+        
+
+        level = 1 # write the number of the last level you have
+        lvl_clr = "#5cb25d"
+        font_clr = "black"
+
+        fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+        fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+
+        fig.data[0]['textfont']['size'] = 30
+
+        return fig
+
+## function for creating the pie chart for soil
+def create_pie(df, query=None):
+    if query:
+        ## filter the dataframe to the selected point
+        df = df.query(query)
+        
+        # Standardizing Units to g/Kg
+        df['soc_0_5cm_mean']=df['soc_0_5cm_mean']*0.10
+        df['nitrogen_0_5cm_mean']=df['nitrogen_0_5cm_mean']*0.01
+        df = df.dropna()
+
+
+        df = pd.melt(
+                    df.head(1),
+                    value_vars=['clay_0_5cm_mean',
+                                'silt_0_5cm_mean',
+                                'sand_0_5cm_mean',
+                                'soc_0_5cm_mean',
+                                'nitrogen_0_5cm_mean']
+                    )
+
+        
+        if len(df) == 0:
+            df = pd.read_csv("soil_temp.csv")
+        
+        df['variable']=df['variable'].replace({
+            'clay_0_5cm_mean':'clay %',
+            'silt_0_5cm_mean':'silt %',
+            'sand_0_5cm_mean':'sand %',
+            'soc_0_5cm_mean':'organic carbon %',
+            'nitrogen_0_5cm_mean':'nitrogen %',
+            
+            
+        })
+        fig = px.pie(
+            df,
+            values='value',
+            names='variable',
+            title='Soil Compositon %',
+            # color_discrete_sequence=px.colors.qualitative.Bold,
+            color_discrete_sequence=px.colors.qualitative.Antique,
+            # px.colors.sequential.Greens_r,
+            hole=.3)
+        fig.update_traces(textposition='inside')
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        
+        return fig
+
 
 ## function for creating the treemap to show specific point wise values 
 def create_trends(df, query=None):
@@ -174,7 +250,11 @@ def species_counts(df=df):
         df_temp.head(10),
         x = 'Occurence Count',
         y="Species",
-        color_discrete_sequence=['#5cb25d'],
+        color="Species",
+        color_discrete_sequence=
+        # px.colors.cyclical.IceFire,
+        px.colors.qualitative.Antique,
+        # color_discrete_sequence=['#5cb25d'],
         text = 'Occurence Count',
         title = 'Occurence Counts for window <>'
     )
@@ -216,7 +296,9 @@ def _update_after_click_on_1(click_data):
     if click_data !=None:
         lat = click_data['points'][0]['lat']
         lon = click_data['points'][0]['lon']
+        plot_pie.object = create_pie(df, f'decimalLatitude == {lat}')
         plot_cards.object = create_cards(df, f'decimalLatitude == {lat}')
+        # plot_pie.object = create_cards(df, f'decimalLatitude == {lat}')
         
 ## function to download dataframe when button is pressed
 def get_csv():
@@ -249,6 +331,7 @@ def fetch_data(input):
             df = bq.copy()
             plot_scatter.object = occ_plot(df)
             plot_cards.object = create_cards(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
+            plot_pie.object = create_pie(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
             plot_trends.object = create_trends(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
 
             plot_species.object = species_counts(df)
@@ -269,11 +352,14 @@ plot_trends = pn.pane.Plotly(create_trends(df, f'decimalLatitude == -22.258903')
 plot_species = pn.pane.Plotly(species_counts())
 
 ###instantiate the cards plot
-plot_cards = pn.pane.Plotly(create_cards(df, f'decimalLatitude == -22.258903'), width=400, height=400)
+plot_cards = pn.pane.Plotly(create_cards(df, f'decimalLatitude == -22.258903'), width=700, height=400)
+
+###instantiate the pie plot
+plot_pie = pn.pane.Plotly(create_pie(df, f'decimalLatitude == -22.258903'), width=700, height=450)
 
 ## display data, can delete later
-cols = ['decimalLatitude','decimalLongitude', 'eventDate', 'species']
-display_data = pn.widgets.DataFrame(df[cols].head(20))
+cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','country']
+display_data = pn.widgets.DataFrame(df[cols].head(13),autosize_mode='fit_viewport')
 
 ## file download button
 file_download_csv = pn.widgets.FileDownload(filename="gbif_covariates.csv", callback=get_csv, button_type="primary")
@@ -311,11 +397,25 @@ template.main[1:5, 6:12]=pn.Tabs(('GBIF',pn.Column(plot_scatter)),
 
 template.main[1:5,:6]= pn.Column('### Species Counts', plot_species, height=400)
 
-template.main[5:6, :] = pn.Column(plot_cards)
+number = pn.indicators.Number(
+    name='Failure Rate', value=72, format='{value}%',
+    # color_discrete_sequence=px.colors.qualitative.Antique,
+    colors=[(33, 'green'), (66, 'gold'), (100, 'red')]
+)
+template.main[5:6, :] = pn.Row(
+    number.clone(name='Clay',value=10),
+    number.clone(name='Radiance',value=42),
+    number.clone(name='Sand',value=93),
+    number.clone(name='Silt',value=5),
+    number.clone(name='CO2',value=99)
+    ) 
 
-template.main[6:9, :] = pn.Column(plot_trends)
+template.main[6:9, :6] = pn.Column(plot_pie)
 
-template.main[9:12, :]= pn.Column(file_download_csv, display_data, height=400)
+template.main[6:9, 6:12] = pn.Column(plot_cards)
+# template.main[6:9, 6:12] = pn.Column(plot_trends)
+
+template.main[9:13, :12]= pn.Column(file_download_csv, display_data, height=200, width = 400)
 
 
 ###color examples

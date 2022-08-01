@@ -20,6 +20,7 @@ pygbif = "^0.6.1"
 panel = "^0.13.1"
 plotly = "^5.9.0"
 db-dtypes = "^1.0.2"
+wordcloud = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
