@@ -18,6 +18,8 @@ from wordcloud import WordCloud
 from meteostat import Point, Daily
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
+
 
 from google.cloud import bigquery
 
@@ -380,7 +382,7 @@ def fetch_data(input):
                    country.value) 
         if len(bq) > 0:
             df = bq.copy()
-            plot_scatter.object = occ_plot(df)
+            plot_scatter.object = occ_plot(df, species.value)
             plot_cards.object = create_cards(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
             plot_pie.object = create_pie(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
             plot_trends.object = create_trends(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
