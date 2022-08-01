@@ -51,6 +51,10 @@ def occ_plot(df=df, species='Callicore sorana'):
     # 'paper_bgcolor': 'rgba(0, 0, 0, 0)'
     # },
     # margin=dict(t=0, b=0, l=0, r=0)) 
+
+    # Refer: https://plotly.com/python/custom-buttons/#methods
+
+
     df = df[df.species == species].copy()
     df['point_size'] = 10
     fig = px.scatter_mapbox(
@@ -58,9 +62,12 @@ def occ_plot(df=df, species='Callicore sorana'):
         lat="decimalLatitude",
         lon="decimalLongitude",
         color="genericName",
-        color_continuous_scale=px.colors.cyclical.IceFire,
+        hover_name= 'genericName',
         size = 'point_size',
-        zoom=5,
+        hover_data= ['species','decimalLongitude','decimalLatitude'],
+        color_discrete_sequence=['#5cb25d'],
+        # color_continuous_scale=px.colors.cyclical.IceFire,
+        zoom=6,
         mapbox_style="open-street-map")
 
     # fig.update_layout(showlegend=False) 
@@ -70,11 +77,47 @@ def occ_plot(df=df, species='Callicore sorana'):
     })
 
     fig.update_layout(
-    title='Geo Spatial Occcurence Instances for <>',
-    autosize=True,
-    hovermode='closest',
-    showlegend=False)
+        # title='Geo Spatial Occcurence Instances for <>',
+        autosize=True,
+        hovermode='closest',
+        margin={"r":0,"t":0,"l":0,"b":0},
+        template="plotly_white",
+        showlegend=False)
 
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type = "buttons",
+                direction = "left",
+                buttons=list([
+                    dict(
+                        args=["color", "genericName"],
+                        label="Occurence",
+                        method="restyle"
+                    ),
+                    dict(
+                        args=["color", "prcp"],
+                        label="Soil",
+                        method="restyle"
+                    )
+                ]),
+                pad={"r": 10, "t": 10},
+                showactive=True,
+                x=0.11,
+                xanchor="left",
+                y=1.1,
+                yanchor="top"
+            ),
+        ]
+    )
+
+    # Add annotation
+    fig.update_layout(
+        annotations=[
+            dict(text="Trace type:", showarrow=False,
+                                x=0, y=1.06, yref="paper", align="left")
+        ]
+    )
 
     return fig
 
@@ -165,7 +208,7 @@ def _update_species(country):
         template.open_modal()
         
 ## create the world scatter plot
-plot_scatter = pn.pane.Plotly(occ_plot(species=species.value),width= 700, height= 600)
+plot_scatter = pn.pane.Plotly(occ_plot(species=species.value),width= 700, height= 550)
         
 ## dependent hidden function to run when a point is clicked in the plot_scatter
 @pn.depends(plot_scatter.param.click_data, watch=True)
@@ -246,7 +289,9 @@ template = pn.template.FastGridTemplate(
     title="🌏 GBIF Powered by Covariates",
     header = ['<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>'],
     sidebar=["""We are interested bleh bleh bleh.\n We will hunt you down if you harm ANY flora or fauna."""],
-    accent = '#5cb25d', sidebar_width = 280, background_color = '#f5f5f5',
+    accent = '#5cb25d',
+    sidebar_width = 280,
+    background_color = '#f5f5f5',
     neutral_color = '#ffffff',
     corner_radius = 15,
     modal = ["## No data for chosen filters. Please choose a different combination of parameters"]
