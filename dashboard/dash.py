@@ -16,15 +16,15 @@ import plotly.graph_objects as go
 
 from meteostat import Point, Daily
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gbif-challenge-953ed382a2dd.json" ##change this
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
 
 from google.cloud import bigquery
 
 client = bigquery.Client()
 
 
-# df = pd.read_csv('human_interference_sample.csv')
-df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
+df = pd.read_csv('gbif_combined.csv')
+# df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
 
 # df.head()
 
@@ -43,7 +43,7 @@ button = pn.widgets.Button(name='Update Plots', width= 200, button_type='primary
 ##################################### All our plot functions
 
 ## the world map view of occurrence data
-def occ_plot(df=df, species=''):
+def occ_plot(df=df, species='Callicore sorana'):
     # fig = px.scatter_geo(df, lat="decimalLatitude", lon='decimalLongitude', color='species')
     # ## making the background transparent below
     # fig.update_layout({
@@ -51,9 +51,10 @@ def occ_plot(df=df, species=''):
     # 'paper_bgcolor': 'rgba(0, 0, 0, 0)'
     # },
     # margin=dict(t=0, b=0, l=0, r=0)) 
+    df = df[df.species == species].copy()
     df['point_size'] = 10
     fig = px.scatter_mapbox(
-        df[df['species'] ==  species],
+        df,
         lat="decimalLatitude",
         lon="decimalLongitude",
         color="genericName",
@@ -62,11 +63,17 @@ def occ_plot(df=df, species=''):
         zoom=5,
         mapbox_style="open-street-map")
 
-    fig.update_layout(showlegend=False) 
+    # fig.update_layout(showlegend=False) 
     fig.update_layout({
     'plot_bgcolor': 'rgba(0, 0, 0, 0)',
     'paper_bgcolor': 'rgba(0, 0, 0, 0)',
     })
+
+    fig.update_layout(
+    title='Geo Spatial Occcurence Instances for <>',
+    autosize=True,
+    hovermode='closest',
+    showlegend=False)
 
 
     return fig
@@ -116,12 +123,24 @@ def create_trends(df, query=None):
         
 ### placeholder histogram plot of species counts
 def species_counts(df=df):
-    fig = px.histogram(df, y="species",color_discrete_sequence=['#5cb25d'])
+    df=  df[df['country'] == 'Brazil']
+    df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Occurence Count')
+    df_temp = df_temp.sort_values(by = ['Occurence Count'],ascending=[False])
+    
+    fig = px.bar(
+        df_temp.head(10),
+        x = 'Occurence Count',
+        y="Species",
+        color_discrete_sequence=['#5cb25d'],
+        text = 'Occurence Count',
+        title = 'Occurence Counts for window <>'
+    )
     fig.update_layout({
-    'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-    'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-    })
-    return fig
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+        })
+
+    return(fig)
 
 
 ################################ Book keeping functions (species filter and call back on click)
@@ -146,7 +165,7 @@ def _update_species(country):
         template.open_modal()
         
 ## create the world scatter plot
-plot_scatter = pn.pane.Plotly(occ_plot(species=species.value),width= 1050, height= 550)
+plot_scatter = pn.pane.Plotly(occ_plot(species=species.value),width= 700, height= 600)
         
 ## dependent hidden function to run when a point is clicked in the plot_scatter
 @pn.depends(plot_scatter.param.click_data, watch=True)
@@ -164,7 +183,7 @@ def get_csv():
 ###################### Main functions to query bigquery and update plots on click 
 
 ## function to get bigquery data, only works for event date filter for now
-def query(start="2022-04-04", end="2022-06-04", country='Brazil', species = 'Callicore sorana'):
+def query(start="2022-04-04", end="2022-06-04", country='Brazil'):
     sql = f"""
     SELECT
         *
@@ -182,8 +201,7 @@ def fetch_data(input):
     if button.clicks > 0:
         bq = query(start_date.value.strftime('%Y-%m-%d'), 
                    end_date.value.strftime('%Y-%m-%d'),
-                   country.value,
-                   species.value) 
+                   country.value) 
         if len(bq) > 0:
             df = bq.copy()
             plot_scatter.object = occ_plot(df)
@@ -241,15 +259,18 @@ template.main[:1, :] = pn.Row(pn.Column(start_date, end_date),
                               species,
                               button)
 
-template.main[1:5, :]=pn.Tabs(('GBIF',pn.Column(plot_scatter)),
+
+
+template.main[1:5, 6:12]=pn.Tabs(('GBIF',pn.Column(plot_scatter)),
                               ('Radiance', pn.pane.HTML(HTML('map1.html'), width=600)), dynamic=True)
 
-template.main[5:9, :4] = pn.Column(plot_cards)
+template.main[1:5,:6]= pn.Column('### Species Counts', plot_species, height=400)
 
-template.main[5:9, 6:12]= pn.Column('### Species Counts', plot_species, height=400)
-template.main[9:11, :]= pn.Column(file_download_csv, display_data, height=400)
+template.main[5:6, :] = pn.Column(plot_cards)
 
-template.main[11:13, :] = pn.Column(plot_trends)
+template.main[6:9, :] = pn.Column(plot_trends)
+
+template.main[9:12, :]= pn.Column(file_download_csv, display_data, height=400)
 
 
 ###color examples
