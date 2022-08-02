@@ -39,10 +39,15 @@ start_date = pn.widgets.DatePicker(name='Start Date', start = dt.date(2021, 12, 
 end_date = pn.widgets.DatePicker(name='End Date', start = dt.date(2021, 12, 1),
                                   end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 6))
 
-country = pn.widgets.Select(name='Country', options=list(df.country.unique()))
-species = pn.widgets.Select(name='Species', options=list(df.species.unique()))
-
+country = pn.widgets.Select(name='Country', options=sorted(list(df.country.unique())))
+species = pn.widgets.Select(name='Species',
+                             options=sorted([str(x) for x in list(df.species.unique())]),
+                             width = 300)
+                             
 button = pn.widgets.Button(name='Update Plots', width= 200, button_type='primary')
+
+button_map = pn.widgets.Button(name='Update Map', width= 200, button_type='primary')
+
 
 ##################################### All our plot functions
 
@@ -126,168 +131,140 @@ def occ_plot(df=df, species='Callicore sorana'):
     )
 
     return fig
+
 # Generate a landcover background
-def create_land_cover_bg(df, query=None):
-    if query:
-        # filter the dataframe to the selected point
-        df = df.query(query)
-        df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
-        if len(df) ==0:
-            df = pd.read_csv('weather.csv')
-        fig = px.treemap(df, path=['variable'], values='value')
-        fig.data[0].textinfo = 'label+value'
-        
+def create_land_cover_bg(df):
+    df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+    if len(df) ==0:
+        df = pd.read_csv('weather.csv')
+    fig = px.treemap(df, path=['variable'], values='value')
+    fig.data[0].textinfo = 'label+value'
+    
 
-        level = 1 # write the number of the last level you have
-        lvl_clr = "#5cb25d"
-        font_clr = "black"
+    level = 1 # write the number of the last level you have
+    lvl_clr = "#5cb25d"
+    font_clr = "black"
 
-        fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
-        fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+    fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+    fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
 
-        fig.data[0]['textfont']['size'] = 30
+    fig.data[0]['textfont']['size'] = 30
 
-        return fig
+    return fig
 
 # Generate a landcove background
-def create_display(df, query=None):
-    if query:
-        # filter the dataframe to the selected point
-        df = df.query(query)
-        df = df.head(1)
-        # df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
-        number = pn.indicators.Number(
-            name='Avg Radiance', value=df['avg_radiance'], format='{value}%',
-            colors=[(33, 'green'), (66, 'gold'), (100, 'red')]
-        )
-        fig=  pn.Row(
-            number.clone(name='Deg Urban',value=df['avg_deg_urban']),
-            # number.clone(name='Land Cover',value=df['land_cover_label']),
-            # number.clone(name='Land Cover',value=df['land_cover_label'])
-        )
-
-        return fig
+def create_display(df):
+    # filter the dataframe to the selected point
+    df = df.reset_index()
+    if len(df) > 0:
+        return round(df.loc[0,'avg_deg_urban'],2), round(df.loc[0, 'avg_radiance'],2), \
+            df.loc[0, 'tavg'], df.loc[0,'wspd'], df.loc[0,'prcp']
 
 ## function for creating the treemap to show specific point wise values 
-def create_cards(df, query=None):
-    if query:
-        # filter the dataframe to the selected point
-        df = df.query(query)
-        df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
-        if len(df) ==0:
-            df = pd.read_csv('weather.csv')
-        fig = px.treemap(df, path=['variable'], values='value')
-        fig.data[0].textinfo = 'label+value'
-        
+def create_cards(df):
+    df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+    if len(df) ==0:
+        df = pd.read_csv('weather.csv')
+    fig = px.treemap(df, path=['variable'], values='value')
+    fig.data[0].textinfo = 'label+value'
+    
 
-        level = 1 # write the number of the last level you have
-        lvl_clr = "#5cb25d"
-        font_clr = "black"
+    level = 1 # write the number of the last level you have
+    lvl_clr = "#5cb25d"
+    font_clr = "black"
 
-        fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
-        fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+    fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+    fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
 
-        fig.data[0]['textfont']['size'] = 30
+    fig.data[0]['textfont']['size'] = 30
 
-        return fig
+    return fig
 
 ## function for creating the wordcloud to show specific point wise values 
-def create_wordcloud(df, query=None):
-    if query:
-        # filter the dataframe to the selected point
-        df = df.query(query)
-        df = df.head(1)
-        df = pd.melt(
-            df.head(1),
-            value_vars=[
-                'land_cover_label',
-                'snow',
-                'is_invasive',
-                'species',
-                'country'])
-        df['count']=[1,1,1,1,1]
-        df['Title']= df['variable'].astype(str) +":" +df['value'].astype(str)
+def create_wordcloud(df):
+    df = df.head(1)
+    df = pd.melt(
+        df.head(1),
+        value_vars=[
+            'land_cover_label',
+            'snow',
+            'is_invasive',
+            'species',
+            'country'])
+    df['count']=[1,1,1,1,1]
+    df['Title']= df['variable'].astype(str) +":" +df['value'].astype(str)
 
-        df=df[['Title','count']]
+    df=df[['Title','count']]
 
-        d = {a: x for a, x in df.values}
-        wc = WordCloud(
-            background_color='white',
-            colormap='Set2',
-            width=400,
-            height=700)
-        wc.fit_words(d)
-        fig = wc.to_image()
+    d = {a: x for a, x in df.values}
+    wc = WordCloud(
+        background_color='white',
+        colormap='Set2',
+        width=400,
+        height=700)
+    wc.fit_words(d)
+    fig = wc.to_image()
 
-        return fig
+    return fig
 
 ## function for creating the pie chart for soil
-def create_pie(df, query=None):
-    if query:
-        ## filter the dataframe to the selected point
-        df = df.query(query).copy()
-        
-        if len(df) == 0:
-            df = pd.read_csv("soil_temp.csv")
+def create_pie(df):   
+    if len(df) == 0:
+        df = pd.read_csv("soil_temp.csv")
 
-        else:
-        # Standardizing Units to g/Kg
-            df['soc_0_5cm_mean']=df['soc_0_5cm_mean']*0.10
-            df['nitrogen_0_5cm_mean']=df['nitrogen_0_5cm_mean']*0.01
+    else:
+    # Standardizing Units to g/Kg
+        df['soc_0_5cm_mean']=df['soc_0_5cm_mean']*0.10
+        df['nitrogen_0_5cm_mean']=df['nitrogen_0_5cm_mean']*0.01
 
-            df = pd.melt(
-                        df.head(1),
-                        value_vars=['clay_0_5cm_mean',
-                                    'silt_0_5cm_mean',
-                                    'sand_0_5cm_mean',
-                                    'soc_0_5cm_mean',
-                                    'nitrogen_0_5cm_mean']
-                        )
+        df = pd.melt(
+                    df.head(1),
+                    value_vars=['clay_0_5cm_mean',
+                                'silt_0_5cm_mean',
+                                'sand_0_5cm_mean',
+                                'soc_0_5cm_mean',
+                                'nitrogen_0_5cm_mean']
+                    )
 
-            df['variable']=df['variable'].replace({
-                'clay_0_5cm_mean':'clay %',
-                'silt_0_5cm_mean':'silt %',
-                'sand_0_5cm_mean':'sand %',
-                'soc_0_5cm_mean':'organic carbon %',
-                'nitrogen_0_5cm_mean':'nitrogen %',          
-            })
+        df['variable']=df['variable'].replace({
+            'clay_0_5cm_mean':'clay %',
+            'silt_0_5cm_mean':'silt %',
+            'sand_0_5cm_mean':'sand %',
+            'soc_0_5cm_mean':'organic carbon %',
+            'nitrogen_0_5cm_mean':'nitrogen %',          
+        })
 
-        fig = px.pie(
-            df,
-            values='value',
-            names='variable',
-            title='Soil Compositon %',
-            # color_discrete_sequence=px.colors.qualitative.Bold,
-            color_discrete_sequence=px.colors.qualitative.Antique,
-            # px.colors.sequential.Greens_r,
-            hole=.3)
-        fig.update_traces(textposition='inside')
-        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-        
-        return fig
+    fig = px.pie(
+        df,
+        values='value',
+        names='variable',
+        title='Soil Compositon %',
+        color_discrete_sequence=px.colors.qualitative.Antique,
+        # px.colors.sequential.Greens_r,
+        hole=.3)
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    
+    return fig
 
 
 ## function for creating the treemap to show specific point wise values 
-def create_trends(df, query=None):
-    if query:
-        ## filter the dataframe to the selected point
-        df = df.query(query)
-        
-        start = dt.datetime(2018, 1, 1)
-        end = dt.datetime(2018, 12, 31)
+def create_trends(df):
+    start = dt.datetime(2018, 1, 1)
+    end = dt.datetime(2018, 12, 31)
 
-        # Create Point for Vancouver, BC
+    # Create Point for Vancouver, BC
 #         pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
-        pt = Point(53.033981, -1.380991, 0)
+    pt = Point(53.033981, -1.380991, 0)
 
-        # Get daily data for 2018
-        data = Daily(pt, start, end)
-        data = data.fetch().reset_index(level=0)
-        if data.shape[0] > 0:
-            fig = px.line(data, x='time', y='tavg', template='plotly_white',
-                          title='Climate Covariates')
-            fig.update_layout(width=600)
-            return  fig
+    # Get daily data for 2018
+    data = Daily(pt, start, end)
+    data = data.fetch().reset_index(level=0)
+    if data.shape[0] > 0:
+        fig = px.line(data, x='time', y='tavg', template='plotly_white',
+                        title='Climate Covariates')
+        fig.update_layout(width=600)
+        return  fig
         
         
 ### placeholder histogram plot of species counts
@@ -331,8 +308,9 @@ def _update_species(country):
     """
     bq = client.query(sql).to_dataframe() ###add error checking
     if len(bq) > 0:
-        species.options = list(bq.species)
-        species.value = list(bq.species)[0]
+        species_list = sorted([x for x in list(bq.species) if x!=None])
+        species.options = species_list
+        species.value = species_list[0]
     else: ## adding a popup box when no data is found for query. 
         template.open_modal()
         
@@ -345,9 +323,13 @@ def _update_after_click_on_1(click_data):
     if click_data !=None:
         lat = click_data['points'][0]['lat']
         lon = click_data['points'][0]['lon']
-        plot_pie.object = create_pie(df, f'decimalLatitude == {lat}')
-        plot_cards.object = create_cards(df, f'decimalLatitude == {lat}')
-        display_workcloud.object = create_wordcloud(df, f'decimalLatitude == {lat}')
+        ###only pass smaller filtered dataframe to click map point based plots
+        df_temp = df[df.decimalLatitude == lat].copy() ####need to update this query in the future
+        plot_pie.object = create_pie(df_temp)
+        plot_cards.object = create_cards(df_temp)
+        display_workcloud.object = create_wordcloud(df_temp)
+        disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
+            disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
         # plot_pie.object = create_cards(df, f'decimalLatitude == {lat}')
         
 ## function to download dataframe when button is pressed
@@ -379,11 +361,14 @@ def fetch_data(input):
                    country.value) 
         if len(bq) > 0:
             df = bq.copy()
+            df_temp = df.head(1).copy()
             plot_scatter.object = occ_plot(df, species.value)
-            plot_cards.object = create_cards(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
-            plot_pie.object = create_pie(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
-            plot_trends.object = create_trends(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
-            display_workcloud = create_wordcloud(df, f"decimalLatitude == {df.loc[0,'decimalLatitude']}")
+            plot_cards.object = create_cards(df_temp)
+            plot_pie.object = create_pie(df_temp)
+            plot_trends.object = create_trends(df_temp)
+            display_workcloud = create_wordcloud(df_temp)
+            disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
+                 disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
 
             plot_species.object = species_counts(df)
             display_data.value = df[cols]
@@ -392,21 +377,27 @@ def fetch_data(input):
             time.sleep(10) ## do we need to close it ourselves?
             template.close_modal()
 
+## function to run when map species button is pressed
+def update_map(input):
+    global df, cols
+    if button_map.clicks > 0:
+        plot_scatter.object = occ_plot(df, species.value)
+
 
 ########################instantations of all panes required to display
-
-
+###need to change this later###########
+df_initial = df[df.decimalLatitude == -21.761845].head(1).copy()
 ###instantiate the cards plot
-plot_trends = pn.pane.Plotly(create_trends(df, f'decimalLatitude == -22.258903'), width=400, height=400)
+plot_trends = pn.pane.Plotly(create_trends(df_initial), width=400, height=400)
 
 ## species count histogram instantiate
 plot_species = pn.pane.Plotly(species_counts())
 
 ###instantiate the cards plot
-plot_cards = pn.pane.Plotly(create_cards(df, f'decimalLatitude == -22.258903'), width=700, height=400)
+plot_cards = pn.pane.Plotly(create_cards(df_initial), width=700, height=400)
 
 ###instantiate the pie plot
-plot_pie = pn.pane.Plotly(create_pie(df, f'decimalLatitude == -22.258903'), width=700, height=450)
+plot_pie = pn.pane.Plotly(create_pie(df_initial), width=700, height=450)
 
 ## display data, can delete later
 cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','country']
@@ -418,13 +409,33 @@ file_download_csv = pn.widgets.FileDownload(filename="gbif_covariates.csv", call
 ###what function to run when update buttton is pressed
 button.on_click(fetch_data)
 
-#instantiate display
-display_stickers = create_display(df, f'decimalLatitude == -22.258903')
+###what function to run when update buttton is pressed
+button_map.on_click(update_map)
 
+#instantiate display
+
+disp_deg_urban = pn.indicators.Number(
+    name='Deg Urban', value=10, format='{value}', font_size ='36pt', 
+    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+
+disp_radiance = pn.indicators.Number(
+    name='Radiance', value=42, format='{value}', font_size ='36pt', 
+    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+
+disp_avg_temp = pn.indicators.Number(
+    name='Avg Temp', value=23, format='{value}C', font_size ='36pt',
+    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+
+disp_wind_speed = pn.indicators.Number(
+    name='Wind Speed', value=5, format='{value}mps', font_size ='36pt', 
+    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+
+disp_precipitation = pn.indicators.Number(
+    name='Precipitation', value=99, format='{value}%', font_size ='36pt', 
+    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
 
 #instantiate wordcloud
-display_workcloud =  pn.pane.PNG(create_wordcloud(df, f'decimalLatitude == -22.258903'))
-
+display_workcloud =  pn.pane.PNG(create_wordcloud(df_initial))
 
 
 ############## The main template to render, sidebar for text
@@ -445,27 +456,24 @@ template = pn.template.FastGridTemplate(
 
 template.main[:1, :] = pn.Row(pn.Column(start_date, end_date),
                               country,
-                              species,
-                              button)
+                              pn.Column('',button))
 
 
+# template.main[1:5, 6:12]=pn.Tabs(('GBIF',pn.Column(plot_scatter)),
+#                               ('Radiance', pn.pane.HTML(HTML('map1.html'), width=600)), dynamic=True)
 
-template.main[1:5, 6:12]=pn.Tabs(('GBIF',pn.Column(plot_scatter)),
-                              ('Radiance', pn.pane.HTML(HTML('map1.html'), width=600)), dynamic=True)
+template.main[1:5, 6:12]=pn.Column(pn.Row(species,button_map), plot_scatter)
+
 
 template.main[1:5,:6]= pn.Column('### Species Counts', plot_species, height=400)
 
-number = pn.indicators.Number(
-    name='Failure Rate', value=72, format='{value}',
-    # color_discrete_sequence=px.colors.qualitative.Antique,
-    colors=[(33, 'green'), (66, 'gold'), (100, 'red')]
-)
+
 template.main[5:6, :] = pn.Row(
-    number.clone(name='Deg Urban',value=10,format='{value}%'),
-    number.clone(name='Radiance',value=42,format='{value}%'),
-    number.clone(name='Avg Temp',value=23,format='{value}C'),
-    number.clone(name='WindSpeed',value=5,format='{value}mps'),
-    number.clone(name='Precipitation',value=99)
+    disp_deg_urban,
+    disp_radiance,
+    disp_avg_temp,
+    disp_precipitation,
+    disp_wind_speed
     ) 
 # template.main[5:6, :] = pn.Row(display_stickers)
 
@@ -478,14 +486,6 @@ template.main[6:9, 6:12] = pn.Column(plot_cards)
 template.main[9:13, :8]= pn.Column(file_download_csv, display_data, height=200, width = 200)
 
 template.main[9:13, 8:12] = pn.Column(display_workcloud)
-
-
-###color examples
-##77cb
-#'#faad55'
-#'#f0a3bc'
-#a18dd6
-
 
 ## tells the terminal command to run the template variable as a dashboard
 
