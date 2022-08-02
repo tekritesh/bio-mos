@@ -27,8 +27,8 @@ from google.cloud import bigquery
 client = bigquery.Client()
 
 
-# df = pd.read_csv('gbif_combined.csv')
-df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
+df = pd.read_csv('gbif_combined.csv')
+# df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
 
 # df.head()
 
@@ -95,62 +95,62 @@ def occ_plot(df=df, species='Callicore sorana'):
         template="plotly_white",
         showlegend=False)
 
-    fig.update_layout(
-        updatemenus=[
-            dict(
-                type = "buttons",
-                direction = "left",
-                buttons=list([
-                    dict(
-                        args=["color",'#ffffff'],
-                        label="Occurence",
-                        method="update"
-                    ),
-                    dict(
-                        args=["color", "#aaaaaa"],
-                        label="Soil",
-                        method="update"
-                    )
-                ]),
-                pad={"r": 10, "t": 10},
-                showactive=True,
-                x=0.11,
-                xanchor="left",
-                y=1.1,
-                yanchor="top"
-            ),
-        ]
-    )
+    # fig.update_layout(
+    #     updatemenus=[
+    #         dict(
+    #             type = "buttons",
+    #             direction = "left",
+    #             buttons=list([
+    #                 dict(
+    #                     args=["color",'#ffffff'],
+    #                     label="Occurence",
+    #                     method="update"
+    #                 ),
+    #                 dict(
+    #                     args=["color", "#aaaaaa"],
+    #                     label="Soil",
+    #                     method="update"
+    #                 )
+    #             ]),
+    #             pad={"r": 10, "t": 10},
+    #             showactive=True,
+    #             x=0.11,
+    #             xanchor="left",
+    #             y=1.1,
+    #             yanchor="top"
+    #         ),
+    #     ]
+    # )
 
     # Add annotation
-    fig.update_layout(
-        annotations=[
-            dict(text="Trace type:", showarrow=False,
-                                x=0, y=1.06, yref="paper", align="left")
-        ]
-    )
+    # fig.update_layout(
+    #     annotations=[
+    #         dict(text="Trace type:", showarrow=False,
+    #                             x=0, y=1.06, yref="paper", align="left")
+    #     ]
+    # )
 
     return fig
 
 # Generate a landcover background
-def create_land_cover_bg(df):
-    df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
-    if len(df) ==0:
-        df = pd.read_csv('weather.csv')
-    fig = px.treemap(df, path=['variable'], values='value')
-    fig.data[0].textinfo = 'label+value'
+# def create_land_cover_bg(df):
+#     df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+#     if len(df) ==0:
+#         df = pd.read_csv('weather.csv')
+#     fig = px.treemap(df, path=['variable'], values='value')
+#     fig.data[0].textinfo = 'label+value'
     
 
-    level = 1 # write the number of the last level you have
-    lvl_clr = "#5cb25d"
-    font_clr = "black"
+#     level = 1 # write the number of the last level you have
+#     lvl_clr = "#5cb25d"
+#     font_clr = "black"
 
-    fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
-    fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+#     fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+#     fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
 
-    fig.data[0]['textfont']['size'] = 30
+#     fig.data[0]['textfont']['size'] = 30
 
-    return fig
+#     return fig
 
 # Generate a landcove background
 def create_display(df):
@@ -170,13 +170,21 @@ def create_cards(df):
     
 
     level = 1 # write the number of the last level you have
-    lvl_clr = "#5cb25d"
+    lvl_clr = "#9C9C5E"
     font_clr = "black"
 
     fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
     fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
 
-    fig.data[0]['textfont']['size'] = 30
+    fig.data[0]['textfont']['size'] = 40
+
+    fig.update_layout(
+        # title='Geo Spatial Occcurence Instances for <>',
+        autosize=True,
+        hovermode='closest',
+        margin={"r":0,"t":0,"l":0,"b":0},
+        template="plotly_white",
+        showlegend=False)
 
     return fig
 
@@ -199,9 +207,14 @@ def create_wordcloud(df):
     d = {a: x for a, x in df.values}
     wc = WordCloud(
         background_color='white',
-        colormap='Set2',
+        # font_path= ,
+        colormap='tab20b',
+        prefer_horizontal = 1,
+        min_font_size=10,
+        scale=1,
+        # background_color = 
         width=400,
-        height=700)
+        height=500)
     wc.fit_words(d)
     fig = wc.to_image()
 
@@ -416,23 +429,23 @@ button_map.on_click(update_map)
 
 disp_deg_urban = pn.indicators.Number(
     name='Deg Urban', value=10, format='{value}', font_size ='36pt', 
-    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
 
 disp_radiance = pn.indicators.Number(
     name='Radiance', value=42, format='{value}', font_size ='36pt', 
-    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
 
 disp_avg_temp = pn.indicators.Number(
     name='Avg Temp', value=23, format='{value}C', font_size ='36pt',
-    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+    colors=[(25, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')])
 
 disp_wind_speed = pn.indicators.Number(
     name='Wind Speed', value=5, format='{value}mps', font_size ='36pt', 
-    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+    colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')])
 
 disp_precipitation = pn.indicators.Number(
     name='Precipitation', value=99, format='{value}%', font_size ='36pt', 
-    colors=[(33, 'green'), (66, 'gold'), (100, 'red')])
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
 
 #instantiate wordcloud
 display_workcloud =  pn.pane.PNG(create_wordcloud(df_initial))
