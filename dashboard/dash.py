@@ -27,8 +27,8 @@ from google.cloud import bigquery
 client = bigquery.Client()
 
 
-df = pd.read_csv('gbif_combined.csv')
-# df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
+# df = pd.read_csv('gbif_combined.csv')
+df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
 
 # df.head()
 
@@ -70,7 +70,7 @@ def occ_plot(df=df, species='Callicore sorana'):
         df,
         lat="decimalLatitude",
         lon="decimalLongitude",
-        # color="genericName",
+        color="land_cover_label",
         hover_name= 'genericName',
         size = 'point_size',
         hover_data= ['species','decimalLongitude','decimalLatitude'],
@@ -261,24 +261,7 @@ def create_pie(df):
     return fig
 
 
-## function for creating the treemap to show specific point wise values 
-def create_trends(df):
-    start = dt.datetime(2018, 1, 1)
-    end = dt.datetime(2018, 12, 31)
 
-    # Create Point for Vancouver, BC
-#         pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
-    pt = Point(53.033981, -1.380991, 0)
-
-    # Get daily data for 2018
-    data = Daily(pt, start, end)
-    data = data.fetch().reset_index(level=0)
-    if data.shape[0] > 0:
-        fig = px.line(data, x='time', y='tavg', template='plotly_white',
-                        title='Climate Covariates')
-        fig.update_layout(width=600)
-        return  fig
-        
         
 ### placeholder histogram plot of species counts
 def species_counts(df=df, country = 'Brazil', start = '2022-04-04', end='2022-04-06'):
@@ -304,6 +287,59 @@ def species_counts(df=df, country = 'Brazil', start = '2022-04-04', end='2022-04
 
     return(fig)
 
+#Climate timeseries trends 
+def create_trends(df, query=None):
+    # if query:
+    #     ## filter the dataframe to the selected point
+    #     df = df.query(query)
+        
+        start = dt.datetime(2018, 1, 1)
+        end = dt.datetime(2018, 12, 31)
+
+        # start = start_date.value.strftime('%Y-%m-%d')
+        # end = end_date.value.strftime('%Y-%m-%d')
+
+        # Create Point for Vancouver, BC
+#         pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
+        pt = Point(53.033981, -1.380991, 0)
+
+        # Get daily data for 2018
+        data = Daily(pt, start, end)
+        data = data.fetch().reset_index(level=0)
+
+        data = pd.melt(data,value_vars=['tavg', 'tmin', 'tmax','prcp','wspd'],id_vars=['time'])
+        if data.shape[0] > 0:
+            fig = px.line(
+                data,
+                x='time',
+                y='value',
+                color='variable',
+                color_discrete_sequence=px.colors.qualitative.Antique,
+                template='plotly_white',
+                title='Climate Covariates'
+                )
+            fig.update_layout({
+                'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+                'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+                })
+
+            fig.update_layout(
+                # title='Geo Spatial Occcurence Instances for <>',
+                autosize=True,
+                hovermode='closest',
+                # margin={"t":0,"b":0},
+                template="plotly_white",
+                showlegend=False)
+
+            # hide and lock down axes
+            fig.update_xaxes(visible=True, fixedrange=True)
+            fig.update_yaxes(visible=False, fixedrange=True)
+
+            # remove facet/subplot labels
+            fig.update_layout(annotations=[], overwrite=True)
+
+            return  fig
+
 
 ################################ Book keeping functions (species filter and call back on click)
         
@@ -319,6 +355,7 @@ def _update_after_click_on_1(click_data):
         ###only pass smaller filtered dataframe to click map point based plots
         df_temp = df[(df.decimalLatitude == lat) & (df.decimalLongitude == lon)].copy() ####need to update this query in the future
         plot_pie.object = create_pie(df_temp)
+        plot_trends.object = create_trends(df_temp)
         plot_cards.object = create_cards(df_temp)
         display_workcloud.object = create_wordcloud(df_temp)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
@@ -389,7 +426,7 @@ def update_map(input):
 ###need to change this later###########
 df_initial = df[(df.decimalLatitude == -21.761845) & (df.decimalLongitude == -43.343467)].head(1).copy()
 ###instantiate the cards plot
-plot_trends = pn.pane.Plotly(create_trends(df_initial), width=400, height=400)
+plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1500, height=450)
 
 ## species count histogram instantiate
 plot_species = pn.pane.Plotly(species_counts())
@@ -482,11 +519,13 @@ template.main[5:6, :] = pn.Row(
 template.main[6:9, :6] = pn.Column(plot_pie)
 
 template.main[6:9, 6:12] = pn.Column(plot_cards)
-# template.main[6:9, 6:12] = pn.Column(plot_trends)
 
-template.main[9:13, :8]= pn.Column(file_download_csv, display_data, height=200, width = 200)
 
-template.main[9:13, 8:12] = pn.Column(display_workcloud)
+template.main[9:12, :] = pn.Column(plot_trends)
+
+template.main[12:15, :8]= pn.Column(file_download_csv, display_data, height=200, width = 200)
+
+template.main[12:15, 8:12] = pn.Column(display_workcloud)
 
 ## tells the terminal command to run the template variable as a dashboard
 
