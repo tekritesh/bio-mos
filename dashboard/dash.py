@@ -18,8 +18,8 @@ from wordcloud import WordCloud
 from meteostat import Point, Daily
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
-#df = pd.read_csv("test_combined.csv")
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
+# df = pd.read_csv("test_combined.csv")
 
 
 from google.cloud import bigquery
@@ -70,7 +70,7 @@ def occ_plot(df=df, species='Callicore sorana'):
         df,
         lat="decimalLatitude",
         lon="decimalLongitude",
-        color="land_cover_label",
+        #color="land_cover_label",
         hover_name= 'genericName',
         size = 'point_size',
         hover_data= ['species','decimalLongitude','decimalLatitude'],
@@ -260,8 +260,6 @@ def create_pie(df):
     
     return fig
 
-
-
         
 ### placeholder histogram plot of species counts
 def species_counts(df=df, country = 'Brazil', start = '2022-04-04', end='2022-04-06'):
@@ -278,7 +276,7 @@ def species_counts(df=df, country = 'Brazil', start = '2022-04-04', end='2022-04
         # px.colors.cyclical.IceFire,
         px.colors.qualitative.Antique,
         text = 'Occurrence Count',
-        title = f'Species Occurrence Counts for {country} between {start} and {end}'
+        title = f'Species Occurrences for {country} between {start} and {end}'
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
@@ -288,57 +286,54 @@ def species_counts(df=df, country = 'Brazil', start = '2022-04-04', end='2022-04
     return(fig)
 
 #Climate timeseries trends 
-def create_trends(df, query=None):
-    # if query:
-    #     ## filter the dataframe to the selected point
-    #     df = df.query(query)
+def create_trends(df):
         
-        start = dt.datetime(2018, 1, 1)
-        end = dt.datetime(2018, 12, 31)
+        start = dt.datetime(2021, 6, 1)
+        end = dt.datetime(2022, 6, 1)
 
         # start = start_date.value.strftime('%Y-%m-%d')
         # end = end_date.value.strftime('%Y-%m-%d')
 
         # Create Point for Vancouver, BC
-#         pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
-        pt = Point(53.033981, -1.380991, 0)
+        df = df.reset_index()
+        pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
+        #pt = Point(53.033981, -1.380991, 0)
 
         # Get daily data for 2018
         data = Daily(pt, start, end)
         data = data.fetch().reset_index(level=0)
+        if len(data) > 0:
+        # data = pd.melt(data,value_vars=['tavg', 'tmin', 'tmax','prcp','wspd'],id_vars=['time'])
+            data = pd.melt(data,value_vars=['tavg', 'tmin', 'tmax'],id_vars=['time'])
 
-        data = pd.melt(data,value_vars=['tavg', 'tmin', 'tmax','prcp','wspd'],id_vars=['time'])
-        if data.shape[0] > 0:
-            fig = px.line(
-                data,
-                x='time',
-                y='value',
-                color='variable',
-                color_discrete_sequence=px.colors.qualitative.Antique,
-                template='plotly_white',
-                title='Climate Covariates'
-                )
-            fig.update_layout({
-                'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-                'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-                })
+            if data.shape[0] > 0:
+                fig = px.line(
+                    data,
+                    x='time',
+                    y='value',
+                    color='variable',
+                    color_discrete_sequence=px.colors.qualitative.Antique,
+                    template='plotly_white',
+                    title=f"Climate Covariates for Latitude: {df.loc[0,'decimalLatitude']} and Longitude: {df.loc[0,'decimalLongitude']}"
+                    )
 
-            fig.update_layout(
-                # title='Geo Spatial Occcurence Instances for <>',
-                autosize=True,
-                hovermode='closest',
-                # margin={"t":0,"b":0},
-                template="plotly_white",
-                showlegend=False)
+                fig.update_layout(
+                    # title='Geo Spatial Occcurence Instances for <>',
+                    autosize=True,
+                    hovermode='closest',
+                    # margin={"t":0,"b":0},
+                    showlegend=True)
+                fig.add_vline(x=df.loc[0,'eventDate'][:10], ##annotation did not work
+                             line_width=1, line_dash="solid", line_color="black")
 
-            # hide and lock down axes
-            fig.update_xaxes(visible=True, fixedrange=True)
-            fig.update_yaxes(visible=False, fixedrange=True)
+                # hide and lock down axes
+                fig.update_xaxes(visible=True, fixedrange=True)
+                fig.update_yaxes(visible=True, fixedrange=True)
 
-            # remove facet/subplot labels
-            fig.update_layout(annotations=[], overwrite=True)
+                # remove facet/subplot labels
+                fig.update_layout(annotations=[], overwrite=True)
 
-            return  fig
+                return  fig
 
 
 ################################ Book keeping functions (species filter and call back on click)
@@ -482,9 +477,10 @@ template = pn.template.FastGridTemplate(
     title="🌏 GBIF Powered by Covariates",
     header = ['<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>'],
     sidebar=["""We are interested bleh bleh bleh.\n We will hunt you down if you harm ANY flora or fauna."""],
-    accent = '#5cb25d',
+    accent = '#6db784',
     sidebar_width = 280,
     background_color = '#f5f5f5',
+    theme_toggle = False,
     neutral_color = '#ffffff',
     corner_radius = 15,
     modal = ["## No data for chosen filters. Please choose a different combination of parameters"]
