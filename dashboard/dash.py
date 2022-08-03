@@ -21,14 +21,21 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
 # df = pd.read_csv("test_combined.csv")
 
+import ee
+import geemap.foliumap as geemap
+import geemap.colormaps as cm
+service_account = '292293468099-compute@developer.gserviceaccount.com'
+credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
+
+
 
 from google.cloud import bigquery
 
 client = bigquery.Client()
 
 
-# df = pd.read_csv('gbif_combined.csv')
-df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
+df = pd.read_csv('gbif_combined.csv')
+# df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
 
 # df.head()
 
@@ -133,24 +140,37 @@ def occ_plot(df=df, species='Callicore sorana'):
     return fig
 
 # Generate a landcover background
-# def create_land_cover_bg(df):
-#     df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
-#     if len(df) ==0:
-#         df = pd.read_csv('weather.csv')
-#     fig = px.treemap(df, path=['variable'], values='value')
-#     fig.data[0].textinfo = 'label+value'
-    
+def create_land_cover_map(df):
+    # df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+    longitude = -40.65
+    latitude = 19.90
+    zoom = 11
+    fig = geemap.Map()
+    fig.add_basemap("ROADMAP")
+    region = ee.Geometry.BBox(-179, -89, 179, 89)
 
-#     level = 1 # write the number of the last level you have
-#     lvl_clr = "#5cb25d"
-#     font_clr = "black"
+    start_date = "2022-01-01"
+    end_date = "2022-07-01"
 
-#     fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
-#     fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
+    dw = geemap.dynamic_world(region, start_date, end_date, return_type="hillshade")
 
-#     fig.data[0]['textfont']['size'] = 30
+    layers = {
+        "Dynamic World": geemap.ee_tile_layer(dw, {}, "Dynamic World Land Cover"),
+    }
+    fig.addLayer(dw, {}, 'Dynamic World Land Cover cover')
+    fig.add_legend(
+        title="Dynamic World Land Cover",
+        builtin_legend="Dynamic_World",
+    )
 
-#     return fig
+    html_file = 'test1.html'
+    # Map._to_png
+    fig.to_html(filename=html_file)
+    # df.to_csv('test.csv')
+    # Map.add_points_from_xy(df, popup=["species"], x='longitude', y='latitude', layer_name="Occurence Data")
+    # fig
+
+    return fig.to_html()
 
 # Generate a landcove background
 def create_display(df):
@@ -296,8 +316,8 @@ def create_trends(df):
 
         # Create Point for Vancouver, BC
         df = df.reset_index()
-        pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
-        #pt = Point(53.033981, -1.380991, 0)
+        # pt = Point(df.loc[0,'deci malLatitude'], df.loc[0,'decimalLongitude'], 0)
+        pt = Point(53.033981, -1.380991, 0)
 
         # Get daily data for 2018
         data = Daily(pt, start, end)
@@ -314,7 +334,7 @@ def create_trends(df):
                     color='variable',
                     color_discrete_sequence=px.colors.qualitative.Antique,
                     template='plotly_white',
-                    title=f"Climate Covariates for Latitude: {df.loc[0,'decimalLatitude']} and Longitude: {df.loc[0,'decimalLongitude']}"
+                    # title=f"Climate Covariates for Latitude: {df.loc[0,'decimalLatitude']} and Longitude: {df.loc[0,'decimalLongitude']}"
                     )
 
                 fig.update_layout(
@@ -323,8 +343,8 @@ def create_trends(df):
                     hovermode='closest',
                     # margin={"t":0,"b":0},
                     showlegend=True)
-                fig.add_vline(x=df.loc[0,'eventDate'][:10], ##annotation did not work
-                             line_width=1, line_dash="solid", line_color="black")
+                # fig.add_vline(x=df.loc[0,'eventDate'][:10], ##annotation did not work
+                #              line_width=1, line_dash="solid", line_color="black")
 
                 # hide and lock down axes
                 fig.update_xaxes(visible=True, fixedrange=True)
@@ -432,6 +452,8 @@ plot_cards = pn.pane.Plotly(create_cards(df_initial), width=700, height=400)
 ###instantiate the pie plot
 plot_pie = pn.pane.Plotly(create_pie(df_initial), width=700, height=450)
 
+plot_land_cover = pn.pane.HTML(create_land_cover_map(df_initial))
+
 ## display data, can delete later
 cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','country']
 display_data = pn.widgets.DataFrame(df[cols].head(13),autosize_mode='fit_viewport')
@@ -521,7 +543,9 @@ template.main[9:12, :] = pn.Column(plot_trends)
 
 template.main[12:15, :8]= pn.Column(file_download_csv, display_data, height=200, width = 200)
 
-template.main[12:15, 8:12] = pn.Column(display_workcloud)
+# template.main[12:15, 8:12] = pn.Column(display_workcloud)
+
+template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
 
 ## tells the terminal command to run the template variable as a dashboard
 
