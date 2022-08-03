@@ -18,8 +18,8 @@ from wordcloud import WordCloud
 from meteostat import Point, Daily
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
-# df = pd.read_csv("test_combined.csv")
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
+#df = pd.read_csv("test_combined.csv")
 
 
 from google.cloud import bigquery
@@ -281,7 +281,7 @@ def create_trends(df):
         
         
 ### placeholder histogram plot of species counts
-def species_counts(df=df):
+def species_counts(df=df, country = 'Brazil', start = '2022-04-04', end='2022-04-06'):
     # df=  df[df['country'] == 'Brazil']
     df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Occurrence Count')
     df_temp = df_temp.sort_values(by = ['Occurrence Count'],ascending=[False])
@@ -289,13 +289,13 @@ def species_counts(df=df):
     fig = px.bar(
         df_temp.head(10),
         x = 'Occurrence Count',
-        y="Species",
+        y = "Species",
         color="Species",
         color_discrete_sequence=
         # px.colors.cyclical.IceFire,
         px.colors.qualitative.Antique,
         text = 'Occurrence Count',
-        title = 'Occurrence Counts for window <>'
+        title = f'Species Occurrence Counts for {country} between {start} and {end}'
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
@@ -306,26 +306,6 @@ def species_counts(df=df):
 
 
 ################################ Book keeping functions (species filter and call back on click)
-
-## function to update species filter based on selection in country
-@pn.depends(country.param.value, watch=True)
-def _update_species(country):
-    start = start_date.value.strftime('%Y-%m-%d')
-    end = end_date.value.strftime('%Y-%m-%d')
-    sql = f"""
-    SELECT
-        DISTINCT species
-    FROM `gbif-challenge.airflow_uploads.gbif_combined`
-    WHERE DATE(eventDate) BETWEEN "{start}" AND "{end}"
-    AND country in ("{country}")
-    """
-    bq = client.query(sql).to_dataframe() ###add error checking
-    if len(bq) > 0:
-        species_list = sorted([x for x in list(bq.species) if x!=None])
-        species.options = species_list
-        species.value = species_list[0]
-    else: ## adding a popup box when no data is found for query. 
-        template.open_modal()
         
 ## create the world scatter plot
 plot_scatter = pn.pane.Plotly(occ_plot(species=species.value),width= 700, height= 550)
@@ -337,7 +317,7 @@ def _update_after_click_on_1(click_data):
         lat = click_data['points'][0]['lat']
         lon = click_data['points'][0]['lon']
         ###only pass smaller filtered dataframe to click map point based plots
-        df_temp = df[df.decimalLatitude == lat].copy() ####need to update this query in the future
+        df_temp = df[(df.decimalLatitude == lat) & (df.decimalLongitude == lon)].copy() ####need to update this query in the future
         plot_pie.object = create_pie(df_temp)
         plot_cards.object = create_cards(df_temp)
         display_workcloud.object = create_wordcloud(df_temp)
@@ -368,13 +348,21 @@ def query(start="2022-04-04", end="2022-06-04", country='Brazil'):
 ## function to run when update button is pressed
 def fetch_data(input):
     global df, cols
+
     if button.clicks > 0:
-        bq = query(start_date.value.strftime('%Y-%m-%d'), 
-                   end_date.value.strftime('%Y-%m-%d'),
-                   country.value) 
+        start, end = start_date.value.strftime('%Y-%m-%d'), end_date.value.strftime('%Y-%m-%d')
+        bq = query(start, end, country.value) 
         if len(bq) > 0:
             df = bq.copy()
             df_temp = df.head(1).copy()
+
+            ##only show available species for the country and time range
+            species_list = list(df.groupby('species').key.count().\
+                    reset_index(name='count').sort_values(['count'], ascending=False).species)
+            species.options = species_list
+            species.value = species_list[0]
+
+            ###update plot objects
             plot_scatter.object = occ_plot(df, species.value)
             plot_cards.object = create_cards(df_temp)
             plot_pie.object = create_pie(df_temp)
@@ -383,7 +371,7 @@ def fetch_data(input):
             disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
                  disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
 
-            plot_species.object = species_counts(df)
+            plot_species.object = species_counts(df, country.value, start, end)
             display_data.value = df[cols]
         else: ## adding a popup box when no data is found for query. 
             template.open_modal()
@@ -399,7 +387,7 @@ def update_map(input):
 
 ########################instantations of all panes required to display
 ###need to change this later###########
-df_initial = df[df.decimalLatitude == -21.761845].head(1).copy()
+df_initial = df[(df.decimalLatitude == -21.761845) & (df.decimalLongitude == -43.343467)].head(1).copy()
 ###instantiate the cards plot
 plot_trends = pn.pane.Plotly(create_trends(df_initial), width=400, height=400)
 
@@ -478,7 +466,7 @@ template.main[:1, :] = pn.Row(pn.Column(start_date, end_date),
 template.main[1:5, 6:12]=pn.Column(pn.Row(species,button_map), plot_scatter)
 
 
-template.main[1:5,:6]= pn.Column('### Species Counts', plot_species, height=400)
+template.main[1:5,:6]= pn.Column(plot_species, height=400)
 
 
 template.main[5:6, :] = pn.Row(
