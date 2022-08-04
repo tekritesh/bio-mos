@@ -18,15 +18,14 @@ from wordcloud import WordCloud
 from meteostat import Point, Daily
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
-# df = pd.read_csv("test_combined.csv")
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
+
 
 import ee
 import geemap.foliumap as geemap
 import geemap.colormaps as cm
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
-
 
 
 from google.cloud import bigquery
@@ -37,7 +36,6 @@ client = bigquery.Client()
 df = pd.read_csv('gbif_combined.csv')
 # df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
 
-# df.head()
 
 ################################## All the filter widgets we need
 start_date = pn.widgets.DatePicker(name='Start Date', start = dt.date(2021, 12, 1),
@@ -68,11 +66,9 @@ def occ_plot(df=df, species='Callicore sorana'):
     # },
     # margin=dict(t=0, b=0, l=0, r=0)) 
 
-    # Refer: https://plotly.com/python/custom-buttons/#methods
-
-
     df = df[df.species == species].copy()
     df['point_size'] = 10
+    df['date'] = df['eventDate'].str[:10]
     fig = px.scatter_mapbox(
         df,
         lat="decimalLatitude",
@@ -80,7 +76,7 @@ def occ_plot(df=df, species='Callicore sorana'):
         #color="land_cover_label",
         hover_name= 'genericName',
         size = 'point_size',
-        hover_data= ['species','decimalLongitude','decimalLatitude'],
+        hover_data= ['species','decimalLongitude','decimalLatitude', 'date'],
         # color_discrete_sequence=['#5cb25d'],
         # color_discrete_sequence=px.colors.qualitative.Bold,
         color_discrete_sequence=px.colors.qualitative.Antique,
@@ -316,8 +312,8 @@ def create_trends(df):
 
         # Create Point for Vancouver, BC
         df = df.reset_index()
-        # pt = Point(df.loc[0,'deci malLatitude'], df.loc[0,'decimalLongitude'], 0)
-        pt = Point(53.033981, -1.380991, 0)
+        pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
+        #pt = Point(53.033981, -1.380991, 0)
 
         # Get daily data for 2018
         data = Daily(pt, start, end)
@@ -334,7 +330,7 @@ def create_trends(df):
                     color='variable',
                     color_discrete_sequence=px.colors.qualitative.Antique,
                     template='plotly_white',
-                    # title=f"Climate Covariates for Latitude: {df.loc[0,'decimalLatitude']} and Longitude: {df.loc[0,'decimalLongitude']}"
+                    title=f"Climate Covariates for Latitude: {df.loc[0,'decimalLatitude']} and Longitude: {df.loc[0,'decimalLongitude']}"
                     )
 
                 fig.update_layout(
@@ -343,8 +339,8 @@ def create_trends(df):
                     hovermode='closest',
                     # margin={"t":0,"b":0},
                     showlegend=True)
-                # fig.add_vline(x=df.loc[0,'eventDate'][:10], ##annotation did not work
-                #              line_width=1, line_dash="solid", line_color="black")
+                fig.add_vline(x=str(df.loc[0,'eventDate'])[:10], ##annotation did not work
+                             line_width=1, line_dash="solid", line_color="black")
 
                 # hide and lock down axes
                 fig.update_xaxes(visible=True, fixedrange=True)
@@ -497,8 +493,8 @@ display_workcloud =  pn.pane.PNG(create_wordcloud(df_initial))
 
 template = pn.template.FastGridTemplate(
     title="🌏 GBIF Powered by Covariates",
-    header = ['<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>'],
-    sidebar=["""We are interested bleh bleh bleh.\n We will hunt you down if you harm ANY flora or fauna."""],
+    header = [pn.Column('','<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
+    # sidebar=["""We are interested bleh bleh bleh.\n We will hunt you down if you harm ANY flora or fauna."""],
     accent = '#6db784',
     sidebar_width = 280,
     background_color = '#f5f5f5',
