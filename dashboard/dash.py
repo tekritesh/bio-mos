@@ -12,23 +12,23 @@ import panel as pn
 import param
 import plotly.express as px
 import plotly.graph_objects as go
-from wordcloud import WordCloud
-
-
+#from wordcloud import WordCloud
 from meteostat import Point, Daily
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ##change this
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##change this
-
+from google.cloud import bigquery
 
 import ee
 import geemap.foliumap as geemap
 import geemap.colormaps as cm
+
 service_account = '292293468099-compute@developer.gserviceaccount.com'
-credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
 
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/mnt/.cred/gbif-challenge-a41b66fe5446.json" ##our vm
 
-from google.cloud import bigquery
+#credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json') ##ritesh advika
+credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
 
 client = bigquery.Client()
 
@@ -208,37 +208,37 @@ def create_cards(df):
 
     return fig
 
-## function for creating the wordcloud to show specific point wise values 
-def create_wordcloud(df):
-    df = df.head(1)
-    df = pd.melt(
-        df.head(1),
-        value_vars=[
-            'land_cover_label',
-            'snow',
-            'is_invasive',
-            'species',
-            'country'])
-    df['count']=[1,1,1,1,1]
-    df['Title']= df['variable'].astype(str) +":" +df['value'].astype(str)
+# ## function for creating the wordcloud to show specific point wise values 
+# def create_wordcloud(df):
+#     df = df.head(1)
+#     df = pd.melt(
+#         df.head(1),
+#         value_vars=[
+#             'land_cover_label',
+#             'snow',
+#             'is_invasive',
+#             'species',
+#             'country'])
+#     df['count']=[1,1,1,1,1]
+#     df['Title']= df['variable'].astype(str) +":" +df['value'].astype(str)
 
-    df=df[['Title','count']]
+#     df=df[['Title','count']]
 
-    d = {a: x for a, x in df.values}
-    wc = WordCloud(
-        background_color='white',
-        # font_path= ,
-        colormap='tab20b',
-        prefer_horizontal = 1,
-        min_font_size=10,
-        scale=1,
-        # background_color = 
-        width=400,
-        height=500)
-    wc.fit_words(d)
-    fig = wc.to_image()
+#     d = {a: x for a, x in df.values}
+#     wc = WordCloud(
+#         background_color='white',
+#         # font_path= ,
+#         colormap='tab20b',
+#         prefer_horizontal = 1,
+#         min_font_size=10,
+#         scale=1,
+#         # background_color = 
+#         width=400,
+#         height=500)
+#     wc.fit_words(d)
+#     fig = wc.to_image()
 
-    return fig
+#     return fig
 
 ## function for creating the pie chart for soil
 def create_pie(df):   
@@ -544,7 +544,9 @@ template.main[12:15, :8]= pn.Column(file_download_csv, display_data, height=200,
 
 # template.main[12:15, 8:12] = pn.Column(display_workcloud)
 
-template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
+# template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
+template.main[12:15, 8:12] = pn.Column(pn.pane.HTML(HTML('map1.html'),width = 600), height=200, width = 200)
+
 
 ## tells the terminal command to run the template variable as a dashboard
 
