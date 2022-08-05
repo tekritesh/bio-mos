@@ -68,7 +68,8 @@ def occ_plot(df=df, species='Callicore sorana'):
 
     df = df[df.species == species].copy()
     df['point_size'] = 10
-    df['date'] = df['eventDate'].str[:10]
+    # df['date'] = df['eventDate'].str[:10]
+    df['date']=df['eventDate'].to_string(index=False)[:10]
     fig = px.scatter_mapbox(
         df,
         lat="decimalLatitude",
@@ -77,6 +78,7 @@ def occ_plot(df=df, species='Callicore sorana'):
         hover_name= 'genericName',
         size = 'point_size',
         hover_data= ['species','decimalLongitude','decimalLatitude', 'date'],
+        # hover_data= ['species','decimalLongitude','decimalLatitude'],
         # color_discrete_sequence=['#5cb25d'],
         # color_discrete_sequence=px.colors.qualitative.Bold,
         color_discrete_sequence=px.colors.qualitative.Antique,
