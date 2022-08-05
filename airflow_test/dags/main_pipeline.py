@@ -29,7 +29,7 @@ def get_human_daily(ds):
 
         sql_inv = f"""SELECT * 
                 FROM `gbif-challenge.airflow_uploads.invasive_species` 
-                WHERE countryCode IN ('BR', 'GB')""" ##hardcoding these two countries for demo
+                WHERE countryCode IN ('BRA', 'GBR')""" ##hardcoding these two countries for demo
 
         df_inv = query.query(sql_inv)
 
