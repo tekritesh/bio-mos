@@ -42,11 +42,13 @@ start_date = pn.widgets.DatePicker(name='Start Date', start = dt.date(2021, 12, 
                                   end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 4))
 
 end_date = pn.widgets.DatePicker(name='End Date', start = dt.date(2021, 12, 1),
-                                  end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 6))
+                                  end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 5))
 
-country = pn.widgets.Select(name='Country', options=sorted(list(df.country.unique())))
+country = pn.widgets.Select(name='Country', options=['United Kingdom of Great Britain and Northern Ireland','Brazil'], 
+                            value = 'United Kingdom of Great Britain and Northern Ireland' )
 species = pn.widgets.Select(name='Species',
-                             options=sorted([str(x) for x in list(df.species.unique())]),
+                             options=list(df.groupby('species').key.count().\
+                                reset_index(name='count').sort_values(['count'], ascending=False).species),
                              width = 300)
                              
 button = pn.widgets.Button(name='Update Plots', width= 200, button_type='primary')
@@ -57,7 +59,7 @@ button_map = pn.widgets.Button(name='Update Map', width= 200, button_type='prima
 ##################################### All our plot functions
 
 ## the world map view of occurrence data
-def occ_plot(df=df, species='Callicore sorana'):
+def occ_plot(df=df, species='Anemone nemorosa'):
     # fig = px.scatter_geo(df, lat="decimalLatitude", lon='decimalLongitude', color='species')
     # ## making the background transparent below
     # fig.update_layout({
@@ -280,8 +282,7 @@ def create_pie(df):
 
         
 ### placeholder histogram plot of species counts
-def species_counts(df=df, country = 'Brazil', start = '2022-04-04', end='2022-04-06'):
-    # df=  df[df['country'] == 'Brazil']
+def species_counts(df=df, country = 'United Kingdom of Great Britain and Northern Ireland', start = '2022-04-04', end='2022-04-05'):
     df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Occurrence Count')
     df_temp = df_temp.sort_values(by = ['Occurrence Count'],ascending=[False])
     
@@ -370,7 +371,7 @@ def _update_after_click_on_1(click_data):
         plot_pie.object = create_pie(df_temp)
         plot_trends.object = create_trends(df_temp)
         plot_cards.object = create_cards(df_temp)
-        display_workcloud.object = create_wordcloud(df_temp)
+        # display_workcloud.object = create_wordcloud(df_temp)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
             disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
         # plot_pie.object = create_cards(df, f'decimalLatitude == {lat}')
@@ -417,7 +418,7 @@ def fetch_data(input):
             plot_cards.object = create_cards(df_temp)
             plot_pie.object = create_pie(df_temp)
             plot_trends.object = create_trends(df_temp)
-            display_workcloud = create_wordcloud(df_temp)
+            # display_workcloud = create_wordcloud(df_temp)
             disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
                  disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
 
@@ -437,7 +438,7 @@ def update_map(input):
 
 ########################instantations of all panes required to display
 ###need to change this later###########
-df_initial = df[(df.decimalLatitude == -21.761845) & (df.decimalLongitude == -43.343467)].head(1).copy()
+df_initial = df[(df.decimalLatitude == 51.458686) & (df.decimalLongitude == 0.073012)].head(1).copy()
 ###instantiate the cards plot
 plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1500, height=450)
 
@@ -468,27 +469,27 @@ button_map.on_click(update_map)
 #instantiate display
 
 disp_deg_urban = pn.indicators.Number(
-    name='Deg Urban', value=10, format='{value}', font_size ='36pt', 
+    name='Deg Urban', value=2.9, format='{value}', font_size ='32pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
 
 disp_radiance = pn.indicators.Number(
-    name='Radiance', value=42, format='{value}', font_size ='36pt', 
+    name='Radiance', value=24.8, format='{value}', font_size ='32pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
 
 disp_avg_temp = pn.indicators.Number(
-    name='Avg Temp', value=23, format='{value}C', font_size ='36pt',
+    name='Avg Temp', value=12.4, format='{value}C', font_size ='32pt',
     colors=[(25, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')])
 
 disp_wind_speed = pn.indicators.Number(
-    name='Wind Speed', value=5, format='{value}mps', font_size ='36pt', 
+    name='Wind Speed', value=23, format='{value}mps', font_size ='32pt', 
     colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')])
 
 disp_precipitation = pn.indicators.Number(
-    name='Precipitation', value=99, format='{value}%', font_size ='36pt', 
+    name='Precipitation', value=0.2, format='{value}mm', font_size ='32pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
 
 #instantiate wordcloud
-display_workcloud =  pn.pane.PNG(create_wordcloud(df_initial))
+# display_workcloud =  pn.pane.PNG(create_wordcloud(df_initial))
 
 
 ############## The main template to render, sidebar for text
