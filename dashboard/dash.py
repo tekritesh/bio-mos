@@ -141,7 +141,7 @@ def occ_plot(df=df, species='Anemone nemorosa'):
     return fig
 
 # Generate a landcover background
-def create_land_cover_map(latitude=53.544292, longitude=-2.218627, start_date="2021-12-01", end_date="2022-05-01"):
+def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="2021-12-01", end_date="2022-05-01"):
     region = ee.Geometry.BBox(-179, -89, 179, 89)
     dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
     classification = dw.select('label')
@@ -154,7 +154,8 @@ def create_land_cover_map(latitude=53.544292, longitude=-2.218627, start_date="2
     map1.addLayer(classification, dwVisParams, 'Classified Image')
     legend = LegendControl({"Water":"#419BDF", "Trees":"#397D49", "Grass":"#88B053",
     "Flooded Vegetation":"#7A87C6", "Crops":"#E49635", "Shrub & Scrub":"#DFC35A",
-    "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="Land Cover Plot Legend", position="bottomright")
+    "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="Land Cover Plot Legend",
+     position="bottomright")
     map1.add_control(legend)
     return map1.to_html(width='100%', height='450px')
 
@@ -426,8 +427,8 @@ def fetch_data(input):
             display_data.value = df[cols]
 
             #update land cover
-            plot_land_cover.object = create_land_cover_map(start, end,
-             df_temp['decimalLatitude'].values[0], df_temp['decimalLongitude'].values[0])
+            plot_land_cover.object = create_land_cover_map(df_temp['decimalLatitude'].values[0],
+                                                           df_temp['decimalLongitude'].values[0])
 
         else: ## adding a popup box when no data is found for query. 
             template.open_modal()
