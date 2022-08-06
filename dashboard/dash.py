@@ -169,12 +169,11 @@ def create_display(df):
 
 ## function for creating the treemap to show specific point wise values 
 def create_cards(df):
-    df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
+    df = pd.melt(df, value_vars=['snow','wdir','wspd','wpgt','pres','tsun'])
     if len(df) ==0:
         df = pd.read_csv('weather.csv')
     fig = px.treemap(df, path=['variable'], values='value')
     fig.data[0].textinfo = 'label+value'
-    
 
     level = 1 # write the number of the last level you have
     lvl_clr = "#9C9C5E"
@@ -182,7 +181,6 @@ def create_cards(df):
 
     fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
     fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
-
     fig.data[0]['textfont']['size'] = 40
 
     fig.update_layout(
@@ -289,7 +287,7 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
         'paper_bgcolor': 'rgba(0, 0, 0, 0)',
         })
 
-    return(fig)
+    return fig
 
 #Function for invasive species count
 def invasive_species_counts(df=df):
@@ -298,14 +296,15 @@ def invasive_species_counts(df=df):
         title = 'Invasive Species Occurrences Histogram'
     else:
         title = 'No Invasive Species Found for the country and date selected'
-    fig = px.histogram(df_temp, x="species",
+    fig = px.histogram(df_temp, y="species",
                     category_orders=dict(species=list(df_temp.species.unique())),
                     title = title,
                     color='species',
+                    template="plotly_white",
                     color_discrete_sequence=px.colors.qualitative.Antique
                     )
     
-    return(fig)
+    return fig
 
 #Climate timeseries trends 
 def create_trends(df):
@@ -458,10 +457,7 @@ plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1500, height=450)
 plot_species = pn.pane.Plotly(species_counts())
 
 #invasice species plot
-
-
 plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df))
-
 
 ###instantiate the cards plot
 plot_cards = pn.pane.Plotly(create_cards(df_initial), width=700, height=400)
@@ -472,20 +468,21 @@ plot_pie = pn.pane.Plotly(create_pie(df_initial), width=700, height=450)
 plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map()),width = 600)
 
 ## display data, can delete later
-cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','country']
-display_data = pn.widgets.DataFrame(df[cols].head(13),autosize_mode='fit_viewport')
+cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','is_invasive','avg_radiance',
+         'land_cover_label', 'tavg', 'tmin', 'tmax', 'prcp','snow','wdir','wspd','phh2o_0_5cm_mean',
+        'clay_0_5cm_mean','nitrogen_0_5cm_mean' ]
+display_data = pn.widgets.DataFrame(df[cols].head(10),autosize_mode='fit_viewport')
 
 ## file download button
 file_download_csv = pn.widgets.FileDownload(filename="gbif_covariates.csv", callback=get_csv, button_type="primary")
 
-###what function to run when update buttton is pressed
+###what function to run when update button is pressed
 button.on_click(fetch_data)
 
-###what function to run when update buttton is pressed
+###what function to run when update button is pressed
 button_map.on_click(update_map)
 
 #instantiate display
-
 disp_deg_urban = pn.indicators.Number(
     name='Deg Urban', value=2.9, format='{value}', font_size ='32pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
@@ -508,7 +505,6 @@ disp_precipitation = pn.indicators.Number(
 
 #instantiate wordcloud
 # display_workcloud =  pn.pane.PNG(create_wordcloud(df_initial))
-
 
 ############## The main template to render, sidebar for text
 
@@ -558,15 +554,14 @@ template.main[6:9, 6:12] = pn.Column(plot_cards)
 
 template.main[9:12, :] = pn.Column(plot_trends)
 
-template.main[12:15, :7]= pn.Column(file_download_csv, display_data, height=200, width = 200)
+template.main[12:15, :6]= pn.Column(plot_invasive_species, width=600)
 
 # template.main[12:15, 8:12] = pn.Column(display_workcloud)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
-template.main[12:15, 7:12] = pn.Column(plot_land_cover, width = 600)
+template.main[12:15, 6:12] = pn.Column(plot_land_cover, width = 600)
 
-template.main[15:18, 0:6] = pn.Column(plot_invasive_species, width=600)
-
+template.main[15:18, :] = pn.Column(file_download_csv, display_data, height=200, width = 200)
 
 ## tells the terminal command to run the template variable as a dashboard
 
