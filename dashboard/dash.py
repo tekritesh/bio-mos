@@ -293,14 +293,18 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
 
 #Function for invasive species count
 def invasive_species_counts(df=df):
-    # df=  df[df['country'] == 'Brazil']
-
-    fig = px.histogram(df, x="species",
-                       category_orders=dict(species=list(df.species.unique())),
-                       title = f'Invasive Species Occurrences Histogram',
-                       color='species',
-                       color_discrete_sequence=px.colors.qualitative.Antique
-                       )
+    df_temp = df[df['is_invasive'] == True]  
+    if not df_temp.empty:
+        title = 'Invasive Species Occurrences Histogram'
+    else:
+        title = 'No Invasive Species Found for the country and date selected'
+    fig = px.histogram(df_temp, x="species",
+                    category_orders=dict(species=list(df_temp.species.unique())),
+                    title = title,
+                    color='species',
+                    color_discrete_sequence=px.colors.qualitative.Antique
+                    )
+    
     return(fig)
 
 #Climate timeseries trends 
@@ -453,12 +457,9 @@ plot_species = pn.pane.Plotly(species_counts())
 
 #invasice species plot
 
-df_temp = df[df['is_invasive'] == True]
-if not df_temp.empty:
-    plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df_temp))
-else:
-    plot_invasive_species = pn.pane.HTML("""<h1>No invasive species found for the country and date range selected </h1>""",
-     style={'font-size': 'large'})
+
+plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df))
+
 
 ###instantiate the cards plot
 plot_cards = pn.pane.Plotly(create_cards(df_initial), width=700, height=400)
