@@ -33,6 +33,10 @@ NOAA
 
 ## Soil
 
+Soil characteristic are linked to vegetation and plant life in the area which influnces the entire ecosystem. Soil properties can be used as an important feature in Species Distribution modelling (SDM) as we expect similar biodiversity in areas with similar physical and chemical soil profile.
+
+To get soil profile we use SoilGrids 250m resolution data (https://www.isric.org/explore/soilgrids)
+
 ### Properties
 
 The table below shows the properties currently mapped with SoilGrids, their description and mapped units. By dividing the predictions values by the values in the *Conversion factor* column, the user can obtain the more familiar units in the *Conventional units* column.
@@ -62,14 +66,35 @@ The table below shows the properties currently mapped with SoilGrids, their desc
 
 ###
 
-We use the 0-5cm mean depth.\
+We use the 0-5cm mean depth for creating the soil profile.
+
+Assumption: We use a bounding box of 1000m around the occurrence location and take mean values of soil variable to account for 
+resolution difference and errors in exact latitutde and longitude of reported GBIF occurence
 
 
 ## Land Cover
 
-The data is from Google's Dynamic World
+Land Cover refers to the physical terrian at a location. Land Cover labels can help ecologist quickly conceptualize the physical environment around an occurence. For getting land cover labels we make use of Google's Dynamic World (https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1) which has spatial resolution of 10m.
 
-10m spatial resolution
+### Land Cover Labels
+
+The dynamic world datasett contains near real-time (NRT) land use land cover (LULC) predictions created from Sentinel-2 imagery for nine land use land cover (LULC) classes as described in the table below.
+
+| Name              |  Description
+| -----------       | ----------------------------
+| Water             | Permanent and seasonal water bodies
+| Trees             | Includes primary and secondary forests, as well as large-scale plantations
+| Grass             | Natural grasslands, livestock pastures, and parks
+| Flooded Vegetation| Mangroves and other inundated ecosystems
+| Crops             | Include row crops and paddy crops
+| Shrub and Scrub   | Sparse to dense open vegetation consisting of shrubs
+| Built             | Low- and high-density buildings, roads, and urban open space
+| Bare              | Deserts and exposed rock
+| Snow and Ice      | Permanent and seasonal snow cover
+| Label             | Index of the band with the highest estimated probability of above labels
+
+Assumption: We use a bounding box of 1000m to grab the dynamic world imagery for a particular location and consider the land cover label to be the label with the highest number of occurence in that bounding box. This is to account for spatial resolution of the data and errors in GBIF's occurence data latitude and longitude values.
+
 
 <br>
 
