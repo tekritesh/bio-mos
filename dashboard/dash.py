@@ -305,6 +305,18 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
 
     return(fig)
 
+#Function for invasive species count
+def invasive_species_counts(df=df):
+    # df=  df[df['country'] == 'Brazil']
+
+    fig = px.histogram(df, x="species",
+                       category_orders=dict(species=list(df.species.unique())),
+                       title = f'Invasive Species Occurrences Histogram',
+                       color='species',
+                       color_discrete_sequence=px.colors.qualitative.Antique
+                       )
+    return(fig)
+
 #Climate timeseries trends 
 def create_trends(df):
         
@@ -446,6 +458,15 @@ plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1500, height=450)
 ## species count histogram instantiate
 plot_species = pn.pane.Plotly(species_counts())
 
+#invasice species plot
+
+df_temp = df[df['is_invasive'] == True]
+if not df_temp.empty:
+    plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df_temp))
+else:
+    plot_invasive_species = pn.pane.HTML("""<h1>No invasive species found for the country and date range selected </h1>""",
+     style={'font-size': 'large'})
+
 ###instantiate the cards plot
 plot_cards = pn.pane.Plotly(create_cards(df_initial), width=700, height=400)
 
@@ -547,6 +568,8 @@ template.main[12:15, :8]= pn.Column(file_download_csv, display_data, height=200,
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
 template.main[12:15, 8:12] = pn.Column(pn.pane.HTML(HTML('map1.html'),width = 600), height=200, width = 200)
+
+template.main[15:18, 0:6] = pn.Column(plot_invasive_species, width=600)
 
 
 ## tells the terminal command to run the template variable as a dashboard
