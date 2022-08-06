@@ -19,8 +19,7 @@ from meteostat import Point, Daily
 from google.cloud import bigquery
 
 import ee
-import geemap.foliumap as geemap
-import geemap.colormaps as cm
+import geemap.geemap as geemap
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
