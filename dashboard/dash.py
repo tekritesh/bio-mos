@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 import time
-# import ee
-# import geemap as geemap
 from io import BytesIO
 from IPython.display import HTML
 from ipyleaflet import LegendControl
@@ -13,7 +11,6 @@ import panel as pn
 import param
 import plotly.express as px
 import plotly.graph_objects as go
-#from wordcloud import WordCloud
 from meteostat import Point, Daily
 
 from google.cloud import bigquery
@@ -61,13 +58,6 @@ button_map = pn.widgets.Button(name='Update Map', width= 200, button_type='prima
 
 ## the world map view of occurrence data
 def occ_plot(df=df, species='Anemone nemorosa'):
-    # fig = px.scatter_geo(df, lat="decimalLatitude", lon='decimalLongitude', color='species')
-    # ## making the background transparent below
-    # fig.update_layout({
-    # 'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-    # 'paper_bgcolor': 'rgba(0, 0, 0, 0)'
-    # },
-    # margin=dict(t=0, b=0, l=0, r=0)) 
 
     df = df[df.species == species].copy()
     df['point_size'] = 10
@@ -81,7 +71,6 @@ def occ_plot(df=df, species='Anemone nemorosa'):
         hover_name= 'genericName',
         size = 'point_size',
         hover_data= ['species','decimalLongitude','decimalLatitude', 'date'],
-        # hover_data= ['species','decimalLongitude','decimalLatitude'],
         # color_discrete_sequence=['#5cb25d'],
         # color_discrete_sequence=px.colors.qualitative.Bold,
         color_discrete_sequence=px.colors.qualitative.Antique,
@@ -102,41 +91,6 @@ def occ_plot(df=df, species='Anemone nemorosa'):
         margin={"r":0,"t":0,"l":0,"b":0},
         template="plotly_white",
         showlegend=False)
-
-    # fig.update_layout(
-    #     updatemenus=[
-    #         dict(
-    #             type = "buttons",
-    #             direction = "left",
-    #             buttons=list([
-    #                 dict(
-    #                     args=["color",'#ffffff'],
-    #                     label="Occurence",
-    #                     method="update"
-    #                 ),
-    #                 dict(
-    #                     args=["color", "#aaaaaa"],
-    #                     label="Soil",
-    #                     method="update"
-    #                 )
-    #             ]),
-    #             pad={"r": 10, "t": 10},
-    #             showactive=True,
-    #             x=0.11,
-    #             xanchor="left",
-    #             y=1.1,
-    #             yanchor="top"
-    #         ),
-    #     ]
-    # )
-
-    # Add annotation
-    # fig.update_layout(
-    #     annotations=[
-    #         dict(text="Trace type:", showarrow=False,
-    #                             x=0, y=1.06, yref="paper", align="left")
-    #     ]
-    # )
 
     return fig
 
@@ -159,9 +113,8 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
     map1.add_control(legend)
     return map1.to_html(width='100%', height='450px')
 
-# Generate a landcove background
+## function to return values for display cards panel
 def create_display(df):
-    # filter the dataframe to the selected point
     df = df.reset_index()
     if len(df) > 0:
         return round(df.loc[0,'avg_deg_urban'],2), round(df.loc[0, 'avg_radiance'],2), \
@@ -192,38 +145,6 @@ def create_cards(df):
         showlegend=False)
 
     return fig
-
-# ## function for creating the wordcloud to show specific point wise values 
-# def create_wordcloud(df):
-#     df = df.head(1)
-#     df = pd.melt(
-#         df.head(1),
-#         value_vars=[
-#             'land_cover_label',
-#             'snow',
-#             'is_invasive',
-#             'species',
-#             'country'])
-#     df['count']=[1,1,1,1,1]
-#     df['Title']= df['variable'].astype(str) +":" +df['value'].astype(str)
-
-#     df=df[['Title','count']]
-
-#     d = {a: x for a, x in df.values}
-#     wc = WordCloud(
-#         background_color='white',
-#         # font_path= ,
-#         colormap='tab20b',
-#         prefer_horizontal = 1,
-#         min_font_size=10,
-#         scale=1,
-#         # background_color = 
-#         width=400,
-#         height=500)
-#     wc.fit_words(d)
-#     fig = wc.to_image()
-
-#     return fig
 
 ## function for creating the pie chart for soil
 def create_pie(df):   
@@ -266,7 +187,7 @@ def create_pie(df):
     return fig
 
         
-### placeholder histogram plot of species counts
+## histogram plot of species counts
 def species_counts(df=df, country = 'United Kingdom of Great Britain and Northern Ireland', start = '2022-04-04', end='2022-04-05'):
     df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Occurrence Count')
     df_temp = df_temp.sort_values(by = ['Occurrence Count'],ascending=[False])
@@ -289,7 +210,7 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
 
     return fig
 
-#Function for invasive species count
+## Function for invasive species count
 def invasive_species_counts(df=df):
     df_temp = df[df['is_invasive'] == True]  
     if not df_temp.empty:
@@ -306,25 +227,19 @@ def invasive_species_counts(df=df):
     
     return fig
 
-#Climate timeseries trends 
+## Climate timeseries trends 
 def create_trends(df):
         
         start = dt.datetime(2021, 6, 1)
         end = dt.datetime(2022, 6, 1)
 
-        # start = start_date.value.strftime('%Y-%m-%d')
-        # end = end_date.value.strftime('%Y-%m-%d')
-
-        # Create Point for Vancouver, BC
         df = df.reset_index()
         pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
         #pt = Point(53.033981, -1.380991, 0)
 
-        # Get daily data for 2018
         data = Daily(pt, start, end)
         data = data.fetch().reset_index(level=0)
         if len(data) > 0:
-        # data = pd.melt(data,value_vars=['tavg', 'tmin', 'tmax','prcp','wspd'],id_vars=['time'])
             data = pd.melt(data,value_vars=['tavg', 'tmin', 'tmax'],id_vars=['time'])
 
             if data.shape[0] > 0:
@@ -355,6 +270,10 @@ def create_trends(df):
                 fig.update_layout(annotations=[], overwrite=True)
 
                 return  fig
+        else: 
+            fig_nan = go.Figure()
+            fig_nan.update_layout(title="No data found for the chosen point", template='plotly_white')
+            return fig_nan
 
 
 ################################ Book keeping functions (species filter and call back on click)
@@ -375,10 +294,8 @@ def _update_after_click_on_1(click_data):
         plot_cards.object = create_cards(df_temp)
         #update land cover
         plot_land_cover.object = create_land_cover_map(latitude=lat, longitude=lon)
-        # display_workcloud.object = create_wordcloud(df_temp)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
             disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
-        # plot_pie.object = create_cards(df, f'decimalLatitude == {lat}')
         
 ## function to download dataframe when button is pressed
 def get_csv():
@@ -422,7 +339,6 @@ def fetch_data(input):
             plot_cards.object = create_cards(df_temp)
             plot_pie.object = create_pie(df_temp)
             plot_trends.object = create_trends(df_temp)
-            # display_workcloud = create_wordcloud(df_temp)
             disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
                  disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
 
@@ -448,8 +364,9 @@ def update_map(input):
 
 
 ########################instantations of all panes required to display
-###need to change this later###########
+###initial conditions
 df_initial = df[(df.decimalLatitude == 51.458686) & (df.decimalLongitude == 0.073012)].head(1).copy()
+
 ###instantiate the cards plot
 plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1500, height=450)
 
@@ -503,9 +420,6 @@ disp_precipitation = pn.indicators.Number(
     name='Precipitation', value=0.2, format='{value}mm', font_size ='32pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')])
 
-#instantiate wordcloud
-# display_workcloud =  pn.pane.PNG(create_wordcloud(df_initial))
-
 ############## The main template to render, sidebar for text
 
 template = pn.template.FastGridTemplate(
@@ -527,15 +441,9 @@ template.main[:1, :] = pn.Row(pn.Column(start_date, end_date),
                               country,
                               pn.Column('',button))
 
-
-# template.main[1:5, 6:12]=pn.Tabs(('GBIF',pn.Column(plot_scatter)),
-#                               ('Radiance', pn.pane.HTML(HTML('map1.html'), width=600)), dynamic=True)
-
 template.main[1:5, 6:12]=pn.Column(pn.Row(species,button_map), plot_scatter)
 
-
 template.main[1:5,:6]= pn.Column(plot_species, height=400)
-
 
 template.main[5:6, :] = pn.Row(
     disp_deg_urban,
@@ -544,19 +452,14 @@ template.main[5:6, :] = pn.Row(
     disp_precipitation,
     disp_wind_speed
     ) 
-# template.main[5:6, :] = pn.Row(display_stickers)
-
 
 template.main[6:9, :6] = pn.Column(plot_pie)
 
 template.main[6:9, 6:12] = pn.Column(plot_cards)
 
-
 template.main[9:12, :] = pn.Column(plot_trends)
 
 template.main[12:15, :6]= pn.Column(plot_invasive_species, width=600)
-
-# template.main[12:15, 8:12] = pn.Column(display_workcloud)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
 template.main[12:15, 6:12] = pn.Column(plot_land_cover, width = 600)
@@ -564,5 +467,4 @@ template.main[12:15, 6:12] = pn.Column(plot_land_cover, width = 600)
 template.main[15:18, :] = pn.Column(file_download_csv, display_data, height=200, width = 200)
 
 ## tells the terminal command to run the template variable as a dashboard
-
 template.servable();
