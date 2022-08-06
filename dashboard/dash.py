@@ -7,6 +7,7 @@ import time
 # import geemap as geemap
 from io import BytesIO
 from IPython.display import HTML
+from ipyleaflet import LegendControl
 
 import panel as pn
 import param
@@ -141,37 +142,22 @@ def occ_plot(df=df, species='Anemone nemorosa'):
     return fig
 
 # Generate a landcover background
-def create_land_cover_map(df):
-    # df = pd.melt(df, value_vars=['tavg', 'tmin', 'tmax','prcp','wspd','wdir'])
-    longitude = -40.65
-    latitude = 19.90
-    zoom = 11
-    fig = geemap.Map()
-    fig.add_basemap("ROADMAP")
+def create_land_cover_map(start_date="2022-01-01", end_date="2022-07-31", latitude=-22.916, longitude=-43.374):
     region = ee.Geometry.BBox(-179, -89, 179, 89)
-
-    start_date = "2022-01-01"
-    end_date = "2022-07-01"
-
-    dw = geemap.dynamic_world(region, start_date, end_date, return_type="hillshade")
-
-    layers = {
-        "Dynamic World": geemap.ee_tile_layer(dw, {}, "Dynamic World Land Cover"),
-    }
-    fig.addLayer(dw, {}, 'Dynamic World Land Cover cover')
-    fig.add_legend(
-        title="Dynamic World Land Cover",
-        builtin_legend="Dynamic_World",
-    )
-
-    html_file = 'test1.html'
-    # Map._to_png
-    fig.to_html(filename=html_file)
-    # df.to_csv('test.csv')
-    # Map.add_points_from_xy(df, popup=["species"], x='longitude', y='latitude', layer_name="Occurence Data")
-    # fig
-
-    return fig.to_html()
+    dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
+    classification = dw.select('label')
+    dwVisParams = {'min': 0, 'max': 8, 'palette': [
+    '#419BDF', '#397D49', '#88B053', '#7A87C6', '#E49635', '#DFC35A',
+    '#C4281B', '#A59B8F', '#B39FE1']}
+    map1 = geemap.Map()
+    map1.add_basemap('HYBRID')
+    map1.setCenter(longitude, latitude, 11)
+    map1.addLayer(classification, dwVisParams, 'Classified Image')
+    legend = LegendControl({"Water":"#419BDF", "Trees":"#397D49", "Grass":"#88B053",
+    "Flooded Vegetation":"#7A87C6", "Crops":"#E49635", "Shrub & Scrub":"#DFC35A",
+    "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="Land Cover Plot Legend", position="bottomright")
+    map1.add_control(legend)
+    return map1.to_html(width='100%', height='450px')
 
 # Generate a landcove background
 def create_display(df):
@@ -384,6 +370,8 @@ def _update_after_click_on_1(click_data):
         plot_pie.object = create_pie(df_temp)
         plot_trends.object = create_trends(df_temp)
         plot_cards.object = create_cards(df_temp)
+        #update land cover
+        plot_land_cover.object = create_land_cover_map(latitude=lat, longitude=lon)
         # display_workcloud.object = create_wordcloud(df_temp)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
             disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
@@ -437,6 +425,11 @@ def fetch_data(input):
 
             plot_species.object = species_counts(df, country.value, start, end)
             display_data.value = df[cols]
+
+            #update land cover
+            plot_land_cover.object = create_land_cover_map(start, end,
+             df_temp['decimalLatitude'].values[0], df_temp['decimalLongitude'].values[0])
+
         else: ## adding a popup box when no data is found for query. 
             template.open_modal()
             time.sleep(10) ## do we need to close it ourselves?
@@ -473,7 +466,7 @@ plot_cards = pn.pane.Plotly(create_cards(df_initial), width=700, height=400)
 ###instantiate the pie plot
 plot_pie = pn.pane.Plotly(create_pie(df_initial), width=700, height=450)
 
-plot_land_cover = pn.pane.HTML(create_land_cover_map(df_initial))
+plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map()),width = 600)
 
 ## display data, can delete later
 cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','country']
@@ -562,12 +555,12 @@ template.main[6:9, 6:12] = pn.Column(plot_cards)
 
 template.main[9:12, :] = pn.Column(plot_trends)
 
-template.main[12:15, :8]= pn.Column(file_download_csv, display_data, height=200, width = 200)
+template.main[12:15, :7]= pn.Column(file_download_csv, display_data, height=200, width = 200)
 
 # template.main[12:15, 8:12] = pn.Column(display_workcloud)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
-template.main[12:15, 8:12] = pn.Column(pn.pane.HTML(HTML('map1.html'),width = 600), height=200, width = 200)
+template.main[12:15, 7:12] = pn.Column(plot_land_cover, width = 600)
 
 template.main[15:18, 0:6] = pn.Column(plot_invasive_species, width=600)
 
