@@ -433,6 +433,8 @@ def fetch_data(input):
             #update land cover
             plot_land_cover.object = create_land_cover_map(df_temp['decimalLatitude'].values[0],
                                                            df_temp['decimalLongitude'].values[0])
+            # update invasive species graph
+            plot_invasive_species.object = invasive_species_counts(df)
 
         else: ## adding a popup box when no data is found for query. 
             template.open_modal()
