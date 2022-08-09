@@ -210,6 +210,11 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
     df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Occurrence Count')
     df_temp = df_temp.sort_values(by = ['Occurrence Count'],ascending=[False])
     
+    if country == 'United Kingdom of Great Britain and Northern Ireland':
+        short_name = 'United Kingdom'
+    else:
+        short_name = country
+
     fig = px.bar(
         df_temp.head(10),
         x = 'Occurrence Count',
@@ -219,7 +224,7 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
         # px.colors.cyclical.IceFire,
         px.colors.qualitative.Antique,
         text = 'Occurrence Count',
-        title = f'Species Occurrences for {country} between {start} and {end}'
+        title = f'Species Occurrences for {short_name}'
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
