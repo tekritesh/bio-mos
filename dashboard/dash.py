@@ -18,6 +18,24 @@ from google.cloud import bigquery
 import ee
 import geemap.geemap as geemap
 
+#CSS
+css = '''
+.bk.update_plot_button_custom {
+  margin-top: 20px !important;
+}
+.bk.update_map_button_custom {
+  margin-top: 20px !important;
+}
+'''
+
+pn.config.raw_css.append('''
+#content {
+background-color: #d9d1bb !important;
+}
+''')
+
+pn.extension(raw_css=[css])
+
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
 #os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
