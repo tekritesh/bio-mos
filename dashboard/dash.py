@@ -1,4 +1,5 @@
-import os 
+import os
+from click import style 
 import pandas as pd
 import numpy as np
 import datetime as dt
@@ -118,15 +119,23 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
     dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
     classification = dw.select('label')
     dwVisParams = {'min': 0, 'max': 8, 'palette': [
-    '#419BDF', '#397D49', '#88B053', '#7A87C6', '#E49635', '#DFC35A',
-    '#C4281B', '#A59B8F', '#B39FE1']}
+    '#526983', '#68855c', '#88B053', '#526983', '#8C785C', '#726f4c',
+    '#af6457', '#d8af6b', '#526983']}
     map1 = geemap.Map()
     map1.add_basemap('TERRAIN')
     map1.setCenter(longitude, latitude, 13)
-    map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.7)
-    legend = LegendControl({"Water":"#419BDF", "Trees":"#397D49", "Grass":"#88B053",
-    "Flooded Vegetation":"#7A87C6", "Crops":"#E49635", "Shrub & Scrub":"#DFC35A",
-    "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="Land Cover Plot Legend")
+    map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
+    legend = LegendControl({
+        "Water":"#526983",
+        "Trees":"#68855c",
+        "Grass":"#88B053",
+        "Flooded Vegetation":"#526983",
+        "Crops":"#8C785C",
+        "Shrub & Scrub":"#726f4c",
+        "Built Area":"#af6457",
+        "Bare ground":"#d8af6b",
+        "Snow & Ice":"#526983"},
+        name="Land Cover Plot Legend")
     
     map1.add_control(legend)
     map1.remove_drawn_features()
@@ -484,6 +493,7 @@ template = pn.template.FastGridTemplate(
     accent = '#4f6457',
     sidebar_width = 280,
     background_color = '#f5f5f5',
+    # background_color = '#f7f4eb',
     theme_toggle = False,
     neutral_color = '#ffffff',
     corner_radius = 15,
@@ -493,11 +503,12 @@ template = pn.template.FastGridTemplate(
 ############## specify which portion of the main page grid you want to place a plot in
 
 #sidebar
-operating_instruction = pn.pane.Markdown(""" # Operating Instruction:
-                                        """, width=200, height=3000)
+# operating_instruction = pn.pane.Markdown(""" # Operating Instruction:
+#                                         """, width=200, height=3000)
 template.main[0:18, 0:2] = pn.Column(pn.Column(pn.pane.Str('We are interested bleh.\n We will hunt you down\n if you harm ANY flora\n or fauna.'),
-                                            #pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=200),
-                                            operating_instruction
+                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(0,0,0,15)),
+                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(25,0,0,-250)),
+                                            # operating_instruction
                                             ), sizing_mode='stretch_both', height=3000, width=210)
 
 # static_text = pn.widgets.StaticText(name='Static Text', value='A string', width = 200)
@@ -529,7 +540,7 @@ template.main[12:15, 2:7] = pn.Column(plot_invasive_species)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
 
-static_text = pn.widgets.StaticText(name='Static Text', value='A string', width = 200)
+static_text = pn.widgets.StaticText(name='Land Cover', value='', width = 200)
 # template.main[:1, 2:] = pn.Column(static_text,pn.Row(start_date, end_date, country, button, height=10))
 template.main[12:15, 7:12] = pn.Column(static_text,plot_land_cover)
 
