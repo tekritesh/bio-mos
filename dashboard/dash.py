@@ -67,9 +67,9 @@ species = pn.widgets.Select(name='Select Species',
                                 reset_index(name='count').sort_values(['count'], ascending=False).species),
                              width = 300)
                              
-button = pn.widgets.Button(name='Update Plots', width= 200, button_type='primary', css_classes=['update_plot_button_custom'])
+button = pn.widgets.Button(name='Fetch Data', width= 300,height = 40,button_type='primary', css_classes=['update_plot_button_custom'])
 
-button_map = pn.widgets.Button(name='Update Map', width= 200, button_type='primary', css_classes=['update_map_button_custom'])
+button_map = pn.widgets.Button(name='Update Map', width= 200,height = 30, button_type='primary', css_classes=['update_map_button_custom'])
 
 
 ##################################### All our plot functions
