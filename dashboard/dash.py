@@ -429,11 +429,11 @@ button_map.on_click(update_map)
 #instantiate display
 disp_deg_urban = pn.indicators.Number(
     name='Deg Urban', value=2.9, format='{value}', font_size ='32pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=250)
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=225)
 
 disp_radiance = pn.indicators.Number(
     name='Radiance', value=24.8, format='{value}', font_size ='32pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=250)
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=225)
 
 disp_avg_temp = pn.indicators.Number(
     name='Avg Temp', value=12.4, format='{value}C', font_size ='32pt',
@@ -441,11 +441,11 @@ disp_avg_temp = pn.indicators.Number(
 
 disp_wind_speed = pn.indicators.Number(
     name='Wind Speed', value=23, format='{value}mps', font_size ='32pt', 
-    colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')], width=250)
+    colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')], width=225)
 
 disp_precipitation = pn.indicators.Number(
     name='Precipitation', value=0.2, format='{value}mm', font_size ='32pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=250)
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=225)
 
 ############## The main template to render, sidebar for text
 
