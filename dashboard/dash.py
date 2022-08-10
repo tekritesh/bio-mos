@@ -553,9 +553,9 @@ style={'padding-left': '190px', 'font-size': '16px'}, width=500)
 template.main[12:15, 7:12] = pn.Column(land_cover_title, plot_land_cover, width = 500)
 
 
-static_text = pn.widgets.StaticText(name='Land Cover', value='', width = 200)
+#static_text = pn.widgets.StaticText(name='Land Cover', value='', width = 200)
 # template.main[:1, 2:] = pn.Column(static_text,pn.Row(start_date, end_date, country, button, height=10))
-template.main[12:15, 7:12] = pn.Column(static_text,plot_land_cover)
+#template.main[12:15, 7:12] = pn.Column(static_text,plot_land_cover)
 
 template.main[15:18, 2:12]= pn.Column(file_download_csv, display_data)
 
