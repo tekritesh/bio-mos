@@ -132,7 +132,7 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
     "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="Land Cover Plot Legend",
      position="bottomright")
     map1.add_control(legend)
-    return map1.to_html(width='100%', height='450px')
+    return map1.to_html(width='100%', height='400px')
 
 ## function to return values for display cards panel
 def create_display(df):
@@ -502,7 +502,9 @@ template.main[9:12, 2:12] = pn.Column(plot_trends)
 template.main[12:15, 2:7] = pn.Column(plot_invasive_species, width=500)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
-template.main[12:15, 7:12] = pn.Column(plot_land_cover, width = 500)
+land_cover_title = pn.pane.HTML(""" <b>Land Cover Classification Labels</b>""",
+style={'padding-left': '190px', 'font-size': '16px'}, width=500)
+template.main[12:15, 7:12] = pn.Column(land_cover_title, plot_land_cover, width = 500)
 
 template.main[15:18, 2:12]= pn.Column(file_download_csv, display_data, height=200, width = 200)
 
