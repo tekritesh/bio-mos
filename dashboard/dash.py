@@ -129,7 +129,7 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
     map1.addLayer(classification, dwVisParams, 'Classified Image')
     legend = LegendControl({"Water":"#419BDF", "Trees":"#397D49", "Grass":"#88B053",
     "Flooded Vegetation":"#7A87C6", "Crops":"#E49635", "Shrub & Scrub":"#DFC35A",
-    "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="Land Cover Plot Legend",
+    "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="",
      position="bottomright")
     map1.add_control(legend)
     return map1.to_html(width='100%', height='400px')
