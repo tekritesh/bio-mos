@@ -1,4 +1,5 @@
-import os 
+import os
+from click import style 
 import pandas as pd
 import numpy as np
 import datetime as dt
@@ -38,12 +39,13 @@ pn.extension(raw_css=[css])
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
 #os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/mnt/.cred/gbif-challenge-a41b66fe5446.json" ##our vm
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/mnt/.cred/gbif-challenge-a41b66fe5446.json" ##our vm
 
-#credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json') ##ritesh advika
-credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
+credentials = ee.ServiceAccountCredentials(service_account, "../gcp_keys.json") ##ritesh advika
+#credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
+#credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
 ee.Initialize(credentials)
 
 client = bigquery.Client()
@@ -67,9 +69,9 @@ species = pn.widgets.Select(name='Select Species',
                                 reset_index(name='count').sort_values(['count'], ascending=False).species),
                              width = 300)
                              
-button = pn.widgets.Button(name='Update Plots', width= 200, button_type='primary', css_classes=['update_plot_button_custom'])
+button = pn.widgets.Button(name='Fetch Data', width= 300,height = 40,button_type='primary', css_classes=['update_plot_button_custom'])
 
-button_map = pn.widgets.Button(name='Update Map', width= 200, button_type='primary', css_classes=['update_map_button_custom'])
+button_map = pn.widgets.Button(name='Update Map', width= 200,height = 30, button_type='primary', css_classes=['update_map_button_custom'])
 
 
 ##################################### All our plot functions
@@ -118,31 +120,52 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
     dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
     classification = dw.select('label')
     dwVisParams = {'min': 0, 'max': 8, 'palette': [
-    '#419BDF', '#397D49', '#88B053', '#7A87C6', '#E49635', '#DFC35A',
-    '#C4281B', '#A59B8F', '#B39FE1']}
+    '#526983', '#68855c', '#88B053', '#526983', '#8C785C', '#726f4c',
+    '#af6457', '#d8af6b', '#526983']}
     map1 = geemap.Map()
-    map1.add_basemap('HYBRID')
-    map1.setCenter(longitude, latitude, 11)
-    map1.addLayer(classification, dwVisParams, 'Classified Image')
-    legend = LegendControl({"Water":"#419BDF", "Trees":"#397D49", "Grass":"#88B053",
-    "Flooded Vegetation":"#7A87C6", "Crops":"#E49635", "Shrub & Scrub":"#DFC35A",
-    "Built Area":"#C4281B", "Bare ground":"#A59B8F", "Snow & Ice":"#B39FE1"}, name="Land Cover Plot Legend",
-     position="bottomright")
+    map1.add_basemap('TERRAIN')
+    map1.setCenter(longitude, latitude, 13)
+    map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
+    legend = LegendControl({
+        "Water":"#526983",
+        "Trees":"#68855c",
+        "Grass":"#88B053",
+        "Flooded Vegetation":"#526983",
+        "Crops":"#8C785C",
+        "Shrub & Scrub":"#726f4c",
+        "Built Area":"#af6457",
+        "Bare ground":"#d8af6b",
+        "Snow & Ice":"#526983"},
+        name="Land Cover Plot Legend")
+    
     map1.add_control(legend)
-    return map1.to_html(width='100%', height='450px')
+    map1.remove_drawn_features()
 
-## function to return values for display cards panel
+    return map1.to_html(width='100%', height='400px')
+
+## function to return values for display cards panel    
 def create_display(df):
     df = df.reset_index()
     if len(df) > 0:
         return round(df.loc[0,'avg_deg_urban'],2), round(df.loc[0, 'avg_radiance'],2), \
-            df.loc[0, 'tavg'], df.loc[0,'wspd'], df.loc[0,'prcp']
+            df.loc[0, 'tavg'], df.loc[0,'wspd'], df.loc[0,'prcp'],df.loc[0,'wdir']
 
 ## function for creating the treemap to show specific point wise values 
 def create_cards(df):
+
     df = pd.melt(df, value_vars=['snow','wdir','wspd','wpgt','pres','tsun'])
     if len(df) ==0:
         df = pd.read_csv('weather.csv')
+    #  Refer: https://dev.meteostat.net/formats.html#meteorological-parameters
+    variable_names = {'snow':'Snow Depth(mm)',
+        'wdir':'Wind Direction(deg)',
+        'wspd':'Wind Speed(km/hr)',
+        'wpgt':'Wind Peak Gust(km/hr)',
+        'pres':'Precipitation(mm)',
+        'tsun':'Sunshine Duration(mins)'}
+    
+    # df = df.replace({"variable":variable_names})
+ 
     fig = px.treemap(df, path=['variable'], values='value')
     fig.data[0].textinfo = 'label+value'
 
@@ -155,12 +178,12 @@ def create_cards(df):
     fig.data[0]['textfont']['size'] = 40
 
     fig.update_layout(
-        # title='Geo Spatial Occcurence Instances for <>',
-        autosize=True,
+        title='Weather Stats for <Date> & [lat/lng]',
+        autosize=False,
         hovermode='closest',
-        margin={"r":0,"t":0,"l":0,"b":0},
+        margin={"r":0,"t":100,"l":0,"b":0},
         template="plotly_white",
-        showlegend=False)
+        showlegend=True)
 
     return fig
 
@@ -237,13 +260,14 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
 def invasive_species_counts(df=df):
     df_temp = df[df['is_invasive'] == True]  
     if not df_temp.empty:
-        title = 'Invasive Species Occurrences Histogram'
+        title = 'Invasive-Species Occurrence Distribution'
     else:
         title = 'No Invasive Species Found for the country and date selected'
     fig = px.histogram(df_temp, y="species",
                     category_orders=dict(species=list(df_temp.species.unique())),
                     title = title,
                     color='species',
+                    labels=dict(species='Species'),
                     template="plotly_white",
                     color_discrete_sequence=px.colors.qualitative.Antique
                     )
@@ -270,6 +294,15 @@ def create_trends(df):
             data = pd.melt(data,value_vars=['tavg', 'tmin', 'tmax'],id_vars=['time'])
 
             if data.shape[0] > 0:
+                variable_names = {
+                    'tavg': 'Avg',
+                    'tmin': 'Min',
+                    'tmax': 'Max',
+                }
+                data = data.replace({"variable":variable_names})
+                # data.rename(columns = {'variable':'Climate Variable', 'value':'Temp(C)'}, inplace = True)
+
+
                 fig = px.line(
                     data,
                     x='time',
@@ -277,7 +310,8 @@ def create_trends(df):
                     color='variable',
                     color_discrete_sequence=px.colors.qualitative.Antique,
                     template='plotly_white',
-                    title=f"Climate Covariates for Latitude: {df.loc[0,'decimalLatitude']} and Longitude: {df.loc[0,'decimalLongitude']}"
+                    title=f"Climate Covariates for [Lat,Lng]: [{df.loc[0,'decimalLatitude']}, {df.loc[0,'decimalLongitude']}]",
+                    labels=dict(variable="Climate Variable", value="Temp(C)",time='Date')
                     )
 
                 fig.update_layout(
@@ -306,7 +340,7 @@ def create_trends(df):
 ################################ Book keeping functions (species filter and call back on click)
         
 ## create the world scatter plot
-plot_scatter = pn.pane.Plotly(occ_plot(species=species.value),width= 600, height= 550)
+plot_scatter = pn.pane.Plotly(occ_plot(species=species.value),width= 700, height= 500)
         
 ## dependent hidden function to run when a point is clicked in the plot_scatter
 @pn.depends(plot_scatter.param.click_data, watch=True)
@@ -322,7 +356,7 @@ def _update_after_click_on_1(click_data):
         #update land cover
         plot_land_cover.object = create_land_cover_map(latitude=lat, longitude=lon)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
-            disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
+            disp_wind_speed.value, disp_precipitation.value, disp_wind_dir.value= create_display(df_temp)
         
 ## function to download dataframe when button is pressed
 def get_csv():
@@ -367,7 +401,7 @@ def fetch_data(input):
             plot_pie.object = create_pie(df_temp)
             plot_trends.object = create_trends(df_temp)
             disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
-                 disp_wind_speed.value, disp_precipitation.value = create_display(df_temp)
+                 disp_wind_speed.value, disp_precipitation.value, disp_wind_dir.value = create_display(df_temp)
 
             plot_species.object = species_counts(df, country.value, start, end)
             display_data.value = df[cols]
@@ -395,13 +429,13 @@ def update_map(input):
 df_initial = df[(df.decimalLatitude == 51.458686) & (df.decimalLongitude == 0.073012)].head(1).copy()
 
 ###instantiate the cards plot
-plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1200, height=450)
+plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1450, height=450)
 
 ## species count histogram instantiate
 plot_species = pn.pane.Plotly(species_counts(),  height=600, width=625)
 
 #invasice species plot
-plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df), width=600)
+plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df),  height=400,width=625)
 
 ###instantiate the cards plot
 plot_cards = pn.pane.Plotly(create_cards(df_initial), width=600, height=400)
@@ -409,13 +443,13 @@ plot_cards = pn.pane.Plotly(create_cards(df_initial), width=600, height=400)
 ###instantiate the pie plot
 plot_pie = pn.pane.Plotly(create_pie(df_initial), width=600, height=450)
 
-plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map()),width = 600)
+plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map()), width = 680)
 
 ## display data, can delete later
 cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','is_invasive','avg_radiance',
          'land_cover_label', 'tavg', 'tmin', 'tmax', 'prcp','snow','wdir','wspd','phh2o_0_5cm_mean',
         'clay_0_5cm_mean','nitrogen_0_5cm_mean' ]
-display_data = pn.widgets.DataFrame(df[cols].head(10), width=1200)
+display_data = pn.widgets.DataFrame(df[cols].head(9), width=1450)
 
 ## file download button
 file_download_csv = pn.widgets.FileDownload(filename="gbif_covariates.csv", callback=get_csv, button_type="primary")
@@ -437,15 +471,19 @@ disp_radiance = pn.indicators.Number(
 
 disp_avg_temp = pn.indicators.Number(
     name='Avg Temp', value=12.4, format='{value}C', font_size ='32pt',
-    colors=[(25, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')])
+    colors=[(20, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')])
 
 disp_wind_speed = pn.indicators.Number(
     name='Wind Speed', value=23, format='{value}mps', font_size ='32pt', 
-    colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')], width=225)
+    colors=[(0, '#68855C'), (10, '#D9AF6B'), (30, '#855C75')], width=225)
+
+disp_wind_dir= pn.indicators.Number(
+    name='Wind Direction', value=23, format='{value}deg', font_size ='32pt', 
+    colors=[(360, '#68855C'), (360, '#D9AF6B'), (360, '#855C75')], width=225)
 
 disp_precipitation = pn.indicators.Number(
     name='Precipitation', value=0.2, format='{value}mm', font_size ='32pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=225)
+    colors=[(20, '#D9AF6B'),(50, '#68855C')], width=225)
 
 ############## The main template to render, sidebar for text
 
@@ -456,6 +494,7 @@ template = pn.template.FastGridTemplate(
     accent = '#4f6457',
     sidebar_width = 280,
     background_color = '#f5f5f5',
+    # background_color = '#f7f4eb',
     theme_toggle = False,
     neutral_color = '#ffffff',
     corner_radius = 15,
@@ -465,14 +504,20 @@ template = pn.template.FastGridTemplate(
 ############## specify which portion of the main page grid you want to place a plot in
 
 #sidebar
-operating_instruction = pn.pane.Markdown(""" # Operating Instruction:
-                                        """, width=200, height=3000)
-template.main[0:18, 0:2] = pn.Column(pn.Column(pn.pane.Str('We are interested bleh.\n We will hunt you down\n if you harm ANY flora\n or fauna.'),
-                                            #pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=200),
-                                            operating_instruction
+# operating_instruction = pn.pane.Markdown(""" # Operating Instruction:
+#                                         """, width=200, height=3000)
+template.main[0:18, 0:2] = pn.Column(pn.Column("### Hello Earth Dwellers",pn.Column("""We are interested in integrating and visualizing environmental variables like climate, soil, and 
+                                        human interference data alongside the biodiversity data from GBIF. Here you can visualize, query, and download
+                                         the data to further conduct analyses on our precious but dwindling biodiversity.""", width = 260),
+                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(0,0,0,15)),
+                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(25,0,0,-250)),
+                                            # operating_instruction
                                             ), sizing_mode='stretch_both', height=3000, width=210)
 
-template.main[:1, 2:] = pn.Row(start_date, end_date, country, button, height=10)
+# static_text = pn.widgets.StaticText(name='Static Text', value='A string', width = 200)
+# template.main[:1, 2:] = pn.Column(static_text,pn.Row(start_date, end_date, country, button, height=10))
+
+template.main[:1, 2:] = pn.Column("",pn.Row(start_date, end_date, country, button, height=10))
 
 template.main[1:5, 7:12]=pn.Column(pn.Row(species,button_map), plot_scatter)
 
@@ -484,6 +529,7 @@ template.main[5:6, 2:12] = pn.Row(
     disp_avg_temp,
     disp_precipitation,
     disp_wind_speed,
+    disp_wind_dir,
     width=1200
     ) 
 
@@ -493,12 +539,15 @@ template.main[6:9, 7:12] = pn.Column(plot_cards)
 
 template.main[9:12, 2:12] = pn.Column(plot_trends)
 
-template.main[12:15, 2:7] = pn.Column(plot_invasive_species, width=500)
+template.main[12:15, 2:7] = pn.Column(plot_invasive_species)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
-template.main[12:15, 7:12] = pn.Column(plot_land_cover, width = 500)
 
-template.main[15:18, 2:12]= pn.Column(file_download_csv, display_data, height=200, width = 200)
+static_text = pn.widgets.StaticText(name='Land Cover', value='', width = 200)
+# template.main[:1, 2:] = pn.Column(static_text,pn.Row(start_date, end_date, country, button, height=10))
+template.main[12:15, 7:12] = pn.Column(static_text,plot_land_cover)
+
+template.main[15:18, 2:12]= pn.Column(file_download_csv, display_data)
 
 ## tells the terminal command to run the template variable as a dashboard
 template.servable();
