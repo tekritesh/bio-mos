@@ -140,7 +140,7 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
         "Built Area":"#af6457",
         "Bare ground":"#d8af6b",
         "Snow & Ice":"#526983"},
-        name="Land Cover Plot Legend")
+        name="")
     
     map1.add_control(legend)
     map1.remove_drawn_features()
