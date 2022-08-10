@@ -44,7 +44,8 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh comp
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/mnt/.cred/gbif-challenge-a41b66fe5446.json" ##our vm
 
 credentials = ee.ServiceAccountCredentials(service_account, "../gcp_keys.json") ##ritesh advika
-# credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
+#credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
+#credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
 ee.Initialize(credentials)
 
 client = bigquery.Client()
@@ -505,7 +506,9 @@ template = pn.template.FastGridTemplate(
 #sidebar
 # operating_instruction = pn.pane.Markdown(""" # Operating Instruction:
 #                                         """, width=200, height=3000)
-template.main[0:18, 0:2] = pn.Column(pn.Column(pn.pane.Str('We are interested bleh.\n We will hunt you down\n if you harm ANY flora\n or fauna.'),
+template.main[0:18, 0:2] = pn.Column(pn.Column("### Hello Earth Dwellers",pn.Column("""We are interested in integrating and visualizing environmental variables like climate, soil, and 
+                                        human interference data alongside the biodiversity data from GBIF. Here you can visualize, query, and download
+                                         the data to further conduct analyses on our precious but dwindling biodiversity.""", width = 260),
                                             pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(0,0,0,15)),
                                             pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(25,0,0,-250)),
                                             # operating_instruction
