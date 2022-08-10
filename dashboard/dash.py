@@ -35,7 +35,10 @@ background-color: #d9d1bb !important;
 }
 ''')
 
-pn.extension(raw_css=[css])
+pn.extension(raw_css=[css], 
+            css_files = ['https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css',
+                         'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css'],
+            js_files={'bootstrap_popper': 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'})
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
@@ -123,6 +126,7 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
     '#526983', '#68855c', '#88B053', '#526983', '#8C785C', '#726f4c',
     '#af6457', '#d8af6b', '#526983']}
     map1 = geemap.Map()
+
     map1.add_basemap('TERRAIN')
     map1.setCenter(longitude, latitude, 13)
     map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
@@ -461,29 +465,33 @@ button.on_click(fetch_data)
 button_map.on_click(update_map)
 
 #instantiate display
+info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (C°)"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in cm"><i class="bi-info-circle"></i></i></a>""", width=85)
+
 disp_deg_urban = pn.indicators.Number(
     name='Deg Urban', value=2.9, format='{value}', font_size ='32pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=225)
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=121)
 
 disp_radiance = pn.indicators.Number(
     name='Radiance', value=24.8, format='{value}', font_size ='32pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=225)
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=100)
 
 disp_avg_temp = pn.indicators.Number(
     name='Avg Temp', value=12.4, format='{value}C', font_size ='32pt',
-    colors=[(20, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')])
+
+    colors=[(25, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')], width=110)
 
 disp_wind_speed = pn.indicators.Number(
     name='Wind Speed', value=23, format='{value}mps', font_size ='32pt', 
-    colors=[(0, '#68855C'), (10, '#D9AF6B'), (30, '#855C75')], width=225)
-
-disp_wind_dir= pn.indicators.Number(
-    name='Wind Direction', value=23, format='{value}deg', font_size ='32pt', 
-    colors=[(360, '#68855C'), (360, '#D9AF6B'), (360, '#855C75')], width=225)
+    colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')], width=140)
 
 disp_precipitation = pn.indicators.Number(
     name='Precipitation', value=0.2, format='{value}mm', font_size ='32pt', 
-    colors=[(20, '#D9AF6B'),(50, '#68855C')], width=225)
+    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=130)
+
 
 ############## The main template to render, sidebar for text
 
@@ -523,15 +531,12 @@ template.main[1:5, 7:12]=pn.Column(pn.Row(species,button_map), plot_scatter)
 
 template.main[1:5, 2:7]= pn.Column(plot_species, height=400)
 
-template.main[5:6, 2:12] = pn.Row(
-    disp_deg_urban,
-    disp_radiance,
-    disp_avg_temp,
-    disp_precipitation,
-    disp_wind_speed,
-    disp_wind_dir,
-    width=1200
-    ) 
+template.main[5:6, 2:4] = pn.Row(pn.Row(disp_deg_urban, info_urban))
+template.main[5:6, 4:6] = pn.Row(pn.Row(disp_radiance, info_radiance))
+template.main[5:6, 6:8] = pn.Row(pn.Row(disp_avg_temp, info_temp))
+template.main[5:6, 8:10] = pn.Row(pn.Row(disp_precipitation, info_precipitation))
+template.main[5:6, 10:12] = pn.Row(pn.Row(disp_wind_speed, info_wind_speed))
+
 
 template.main[6:9, 2:7] = pn.Column(plot_pie)
 
@@ -542,6 +547,11 @@ template.main[9:12, 2:12] = pn.Column(plot_trends)
 template.main[12:15, 2:7] = pn.Column(plot_invasive_species)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
+
+land_cover_title = pn.pane.HTML(""" <b>Land Cover Classification Labels</b>""",
+style={'padding-left': '190px', 'font-size': '16px'}, width=500)
+template.main[12:15, 7:12] = pn.Column(land_cover_title, plot_land_cover, width = 500)
+
 
 static_text = pn.widgets.StaticText(name='Land Cover', value='', width = 200)
 # template.main[:1, 2:] = pn.Column(static_text,pn.Row(start_date, end_date, country, button, height=10))
