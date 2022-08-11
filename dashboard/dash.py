@@ -367,7 +367,7 @@ def _update_after_click_on_1(click_data):
         plot_trends.object = create_trends(df_temp)
         plot_cards.object = create_cards(df_temp)
         #update land cover
-        plot_land_cover.object = create_land_cover_map(latitude=lat, longitude=lon)
+        plot_land_cover.object = create_land_cover_map(df=df_temp)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
             disp_wind_speed.value, disp_precipitation.value, disp_wind_dir.value= create_display(df_temp)
         
@@ -420,8 +420,7 @@ def fetch_data(input):
             display_data.value = df[cols]
 
             #update land cover
-            plot_land_cover.object = create_land_cover_map(df_temp['decimalLatitude'].values[0],
-                                                           df_temp['decimalLongitude'].values[0])
+            plot_land_cover.object = create_land_cover_map(df=df_temp)
             # update invasive species graph
             plot_invasive_species.object = invasive_species_counts(df)
 
@@ -456,7 +455,7 @@ plot_cards = pn.pane.Plotly(create_cards(df_initial), width=600, height=400)
 ###instantiate the pie plot
 plot_pie = pn.pane.Plotly(create_pie(df_initial), width=600, height=450)
 
-plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map()), width = 680)
+plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map(df=df_initial)), width = 680)
 
 ## display data, can delete later
 cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','is_invasive','avg_radiance',
