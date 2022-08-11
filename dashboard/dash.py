@@ -118,7 +118,14 @@ def occ_plot(df=df, species='Anemone nemorosa'):
     return fig
 
 # Generate a landcover background
-def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="2021-12-01", end_date="2022-05-01"):
+def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df):
+    df_temp = df.rename(columns={'decimalLatitude': 'latitude', 'decimalLongitude': 'longitude'})
+    df_temp = df_temp[['latitude', 'longitude', 'species']]
+    repeat_df = pd.DataFrame(np.repeat(df_temp.values, 2, axis=0))
+    repeat_df.columns = df_temp.columns
+    latitude = repeat_df.latitude.values[0]
+    longitude = repeat_df.longitude.values[0]
+    
     region = ee.Geometry.BBox(-179, -89, 179, 89)
     dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
     classification = dw.select('label')
@@ -130,6 +137,8 @@ def create_land_cover_map(latitude=51.458686, longitude=0.073012, start_date="20
     map1.add_basemap('TERRAIN')
     map1.setCenter(longitude, latitude, 13)
     map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
+    map1.add_points_from_xy(repeat_df, popup=['species', 'latitude', 'longitude'], x='longitude', y='latitude',
+                             layer_name='marker')
     legend = LegendControl({
         "Water":"#526983",
         "Trees":"#68855c",
