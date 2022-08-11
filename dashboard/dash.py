@@ -135,7 +135,7 @@ def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df)
     map1 = geemap.Map()
 
     map1.add_basemap('TERRAIN')
-    map1.setCenter(longitude, latitude, 13)
+    map1.setCenter(longitude, latitude, 7)
     map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
     map1.add_points_from_xy(repeat_df, popup=['species', 'latitude', 'longitude'], x='longitude', y='latitude',
                              layer_name='marker')
@@ -161,7 +161,7 @@ def create_display(df):
     df = df.reset_index()
     if len(df) > 0:
         return round(df.loc[0,'avg_deg_urban'],2), round(df.loc[0, 'avg_radiance'],2), \
-            df.loc[0, 'tavg'], df.loc[0,'wspd'], df.loc[0,'prcp'],df.loc[0,'wdir']
+            df.loc[0, 'tavg'], df.loc[0,'wspd'], df.loc[0,'prcp']
 
 ## function for creating the treemap to show specific point wise values 
 def create_cards(df):
@@ -369,7 +369,7 @@ def _update_after_click_on_1(click_data):
         #update land cover
         plot_land_cover.object = create_land_cover_map(df=df_temp)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
-            disp_wind_speed.value, disp_precipitation.value, disp_wind_dir.value= create_display(df_temp)
+            disp_wind_speed.value, disp_precipitation.value= create_display(df_temp)
         
 ## function to download dataframe when button is pressed
 def get_csv():
@@ -504,12 +504,14 @@ disp_precipitation = pn.indicators.Number(
 ############## The main template to render, sidebar for text
 
 template = pn.template.FastGridTemplate(
-    title="🌏 GBIF Powered by Covariates",
+    title="GBIF Powered by Covariates",
     header = [pn.Column('','<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
     # sidebar=["""We are interested bleh bleh bleh.\n We will hunt you down if you harm ANY flora or fauna."""],
     accent = '#4f6457',
     sidebar_width = 280,
     background_color = '#f5f5f5',
+    # favicon = 'https://img.icons8.com/external-flaticons-lineal-color-flat-icons/452/external-earth-plants-flaticons-lineal-color-flat-icons-2.png',
+    favicon = 'https://img.icons8.com/external-icongeek26-linear-colour-icongeek26/452/external-earth-zoology-icongeek26-linear-colour-icongeek26.png',
     # background_color = '#f7f4eb',
     theme_toggle = False,
     neutral_color = '#ffffff',
@@ -522,7 +524,10 @@ template = pn.template.FastGridTemplate(
 #sidebar
 # operating_instruction = pn.pane.Markdown(""" # Operating Instruction:
 #                                         """, width=200, height=3000)
-template.main[0:18, 0:2] = pn.Column(pn.Column("### Hello Earth Dwellers",pn.Column("""We are interested in integrating and visualizing environmental variables like climate, soil, and 
+template.main[0:18, 0:2] = pn.Column(
+    pn.Column(
+        "## Hello Earth Dwellers",
+        pn.Column("""We are interested in integrating and visualizing environmental variables like climate, soil, and 
                                         human interference data alongside the biodiversity data from GBIF. Here you can visualize, query, and download
                                          the data to further conduct analyses on our precious but dwindling biodiversity.""", width = 260),
                                             pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(0,0,0,15)),
@@ -556,7 +561,7 @@ template.main[12:15, 2:7] = pn.Column(plot_invasive_species)
 
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
 
-land_cover_title = pn.pane.HTML(""" <b>Land Cover Classification Labels</b>""",
+land_cover_title = pn.pane.HTML("""Land Cover Classification Labels""",
 style={'padding-left': '190px', 'font-size': '16px'}, width=500)
 template.main[12:15, 7:12] = pn.Column(land_cover_title, plot_land_cover, width = 500)
 
