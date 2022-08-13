@@ -463,7 +463,7 @@ template = pn.template.FastGridTemplate(
     title="🦭 Bio-mos",
     header = [pn.Column('','<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
     accent = '#4f6457',
-    background_color = '#f5f5f5',
+    background_color = '#f7f4eb',
     # favicon = 'https://img.icons8.com/external-flaticons-lineal-color-flat-icons/452/external-earth-plants-flaticons-lineal-color-flat-icons-2.png',
     favicon = 'https://img.icons8.com/external-icongeek26-linear-colour-icongeek26/452/external-earth-zoology-icongeek26-linear-colour-icongeek26.png',
     # favicon = './assets/favicon.png'
@@ -482,9 +482,14 @@ template.main[0:17, 0:2] = pn.Column(
                     that combine environmental data from disparate sources. We are interested in integrating and visualizing variables like climate, soil, and 
                     human interference data alongside the biodiversity data from GBIF.  <br> <br>Here you can visualize, query, and download augmented GBIF data to further conduct analyses on our precious but dwindling biodiversity.
                     Start by selecting your dates and country of interest.""", width = 210),
-                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(40,0,0,30)),
-                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(60,0,0,-430)),
-                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(60,0,0,-150)),
+                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(60,50,0,3)),
+                                            pn.pane.JPG('./assets/side_bar_2.jpg', width=200, height = 650, margin=(60,50,0,3)),
+                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(60,0,0,-400)),
+                                            
+
+                                            # pn.pane.JPG('./assets/side_bar.jpg', width=400, height = 550, margin=(60,50,0,3)),
+                                            # pn.pane.JPG('./assets/side_bar.jpg', width=400, height = 550, margin=(60,0,0,-400)),
+                                            # pn.pane.JPG('./assets/side_bar.jpg', width=400, height = 550, margin=(60,50,0,3)),
                                             # operating_instruction
                                             ), sizing_mode='stretch_both', height=3000, width=210)
 
