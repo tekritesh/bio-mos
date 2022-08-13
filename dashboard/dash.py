@@ -43,12 +43,12 @@ pn.extension(raw_css=[css],
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/mnt/.cred/gbif-challenge-a41b66fe5446.json" ##our vm
 
-#credentials = ee.ServiceAccountCredentials(service_account, "../gcp_keys.json") ##ritesh advika
-credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
+credentials = ee.ServiceAccountCredentials(service_account, "../gcp_keys.json") ##ritesh advika
+#credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
 #credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
 ee.Initialize(credentials)
 
@@ -474,11 +474,12 @@ template = pn.template.FastGridTemplate(
 
 ############## specify which portion of the main page grid you want to place a plot in
 
-template.main[0:18, 0:2] = pn.Column(
-    pn.Column(pn.pane.HTML('<b>Hello Earth Dwellers</b>'),
-        pn.Column("""We are interested in integrating and visualizing environmental variables like climate, soil, and 
-                                        human interference data alongside the biodiversity data from GBIF. Here you can visualize, query, and download
-                                         the data to further conduct analyses on our precious but dwindling biodiversity.""", width = 210),
+template.main[0:17, 0:2] = pn.Column(
+    pn.Column(pn.pane.HTML('<b><font size="+1">Hello Earth Dwellers</font></b>'),
+        pn.Column("""At Bio-Mos, we simplify data-driven biodiversity modeling by creating scalable and robust pipelines 
+                    that combine environmental data from disparate sources. We are interested in integrating and visualizing variables like climate, soil, and 
+                    human interference data alongside the biodiversity data from GBIF.  <br> <br>Here you can visualize, query, and download augmented GBIF data to further conduct analyses on our precious but dwindling biodiversity.
+                    Start by selecting your dates and country of interest.""", width = 210),
                                             pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=350, height = 350, margin=(0,0,0,15)),
                                             pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=350, height = 350, margin=(25,0,0,-175)),
                                             # operating_instruction
@@ -514,7 +515,7 @@ template.main[13:14, 4:6] = disp_pres
 
 template.main[12:14, 6:12] = pn.Column(plot_invasive_species)
 
-template.main[14:16, 2:12]= pn.Column(file_download_csv, display_data)
+template.main[14:17, 2:12]= pn.Column(file_download_csv, display_data)
 
 ## tells the terminal command to run the template variable as a dashboard
 template.servable();
