@@ -9,7 +9,7 @@ from math import cos, pi
 import pandas as pd
 import logging
 
-class GetSoilInfo:
+class SoilInfo():
 
 
     def __init__(self, log_level = logging.INFO):
@@ -40,6 +40,8 @@ class GetSoilInfo:
             return 29101
         elif country == 'GB':
             return 27700
+        elif country == "":
+            return -1
 
 
     def __get_bounding_box(self, latitude, longitude, projection_epsg):
@@ -85,14 +87,14 @@ class GetSoilInfo:
             soil_covariates[datatype] = median_value
         return soil_covariates
 
-    def get_soil_covaraites_for_gbif_data(self,lat_deg, lon_deg, country_code=''):
-        """Function to Get Interpolated climate data for lat,lon,altitude for a given date
+    def get_soil_info(self,lat_deg, lon_deg, country_code=''):
+        """Function to Get Soil Composition Information for a given lat,lon and country code.
             lat_deg(float): latitude coordinates in degrees
             lon_deg(float): longitude coordinates in degrees
             country_code (str): 2 digit ISO country code
         """
         
-        projection_epsg = self.__get_projection_epsg(country_code)
+        projection_epsg = self.__get_projection_epsg(country = country_code)
         subsets = self.__get_bounding_box(lat_deg, lon_deg, projection_epsg)
         soil_covariates = self.__get_soil_data( self.wcs, subsets, projection_epsg)
         soil_covariates['decimalLatitude'] = lat_deg
