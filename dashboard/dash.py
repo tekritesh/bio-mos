@@ -36,10 +36,7 @@ background-color: #d9d1bb !important;
 }
 ''')
 
-pn.extension(raw_css=[css], 
-            css_files = ['https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css',
-                         'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css'],
-            js_files={'bootstrap_popper': 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'})
+pn.extension(raw_css=[css])
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
