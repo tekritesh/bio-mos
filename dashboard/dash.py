@@ -483,11 +483,11 @@ button.on_click(fetch_data)
 button_map.on_click(update_map)
 
 #instantiate display
-info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (C°)"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in cm"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (C°)"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in cm"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 
 disp_deg_urban = pn.indicators.Number(
     name='Deg Urban', value=2.9, format='{value}', font_size ='32pt', 
