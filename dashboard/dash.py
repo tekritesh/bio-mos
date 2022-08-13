@@ -35,6 +35,7 @@ background-color: #d9d1bb !important;
 }
 ''')
 
+
 pn.extension(raw_css=[css], 
             css_files = ['https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css',
                          'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css'],
@@ -94,23 +95,14 @@ def occ_plot(df=df, species='Anemone nemorosa'):
         hover_name= 'genericName',
         size = 'point_size',
         hover_data= ['species','decimalLongitude','decimalLatitude', 'date'],
-        # color_discrete_sequence=['#5cb25d'],
-        # color_discrete_sequence=px.colors.qualitative.Bold,
         color_discrete_sequence=px.colors.qualitative.Antique,
         # color_continuous_scale=px.colors.cyclical.IceFire,
         zoom=6,
         mapbox_style="open-street-map")
 
-    # fig.update_layout(showlegend=False) 
-    fig.update_layout({
-    'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-    'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-    })
-
     fig.update_layout(
         # title='Geo Spatial Occcurence Instances for <>',
         autosize=True,
-        # width=550,
         hovermode='closest',
         margin={"r":160,"t":0,"l":0,"b":0},
         template="plotly_white",
@@ -162,46 +154,8 @@ def create_display(df):
     df = df.reset_index()
     if len(df) > 0:
         return round(df.loc[0,'avg_deg_urban'],2), round(df.loc[0, 'avg_radiance'],2), \
-            df.loc[0, 'tavg'], df.loc[0,'wspd'], df.loc[0,'prcp']
-
-## function for creating the treemap to show specific point wise values 
-def create_cards(df):
-
-    df_temp = pd.melt(df, value_vars=['snow','wdir','wspd','wpgt','pres','tsun'])
-    df['date']=df['eventDate'].to_string(index=False)[:10]
-    df = df.reset_index()
-    if len(df_temp) ==0:
-        df_temp = pd.read_csv('weather.csv')
-    #  Refer: https://dev.meteostat.net/formats.html#meteorological-parameters
-    variable_names = {'snow':'Snow Depth(mm)',
-        'wdir':'Wind Direction(deg)',
-        'wspd':'Wind Speed(km/hr)',
-        'wpgt':'Wind Peak Gust(km/hr)',
-        'pres':'Precipitation(mm)',
-        'tsun':'Sunshine Duration(mins)'}
-    
-    # df = df.replace({"variable":variable_names})
- 
-    fig = px.treemap(df_temp, path=['variable'], values='value')
-    fig.data[0].textinfo = 'label+value'
-
-    level = 1 # write the number of the last level you have
-    lvl_clr = "#9C9C5E"
-    font_clr = "black"
-
-    fig.data[0]['marker']['colors'] =[lvl_clr for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
-    fig.data[0]['textfont']['color'] = [font_clr  for sector in fig.data[0]['ids'] if len(sector.split("/")) == level]
-    fig.data[0]['textfont']['size'] = 40
-
-    fig.update_layout(
-        title=f'Weather Stats for {df.loc[0,"date"]} & (Lat, Lon): ({df.loc[0,"decimalLatitude"]}, {df.loc[0,"decimalLongitude"]})',
-        autosize=True,
-        hovermode='closest',
-        margin={"r":0,"t":50,"l":0,"b":0},
-        template="plotly_white",
-        showlegend=True)
-
-    return fig
+            df.loc[0, 'tavg'], df.loc[0,'wspd'], df.loc[0,'prcp'], df.loc[0,'snow'], \
+            df.loc[0,'wdir'], df.loc[0,'wpgt'], df.loc[0,'pres']
 
 ## function for creating the pie chart for soil
 def create_pie(df):   
@@ -267,12 +221,14 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
 
 ## Function for invasive species count
 def invasive_species_counts(df=df):
-    df_temp = df[df['is_invasive'] == True]  
+    df_temp = df[df['is_invasive'] == True].copy() 
     if not df_temp.empty:
         title = 'Invasive-Species Occurrence Distribution'
+        df_temp = df_temp['species'].value_counts().rename_axis('species').reset_index(name='Count')
+        df_temp = df_temp.sort_values(by = ['Count'],ascending=[False])
     else:
         title = 'No Invasive Species Found for the country and date selected'
-    fig = px.histogram(df_temp, y="species",
+    fig = px.histogram(df_temp, x='Count', y="species",
                     category_orders=dict(species=list(df_temp.species.unique())),
                     title = title,
                     color='species',
@@ -290,7 +246,6 @@ def create_trends(df):
 
         df = df.reset_index()
         pt = Point(df.loc[0,'decimalLatitude'], df.loc[0,'decimalLongitude'], 0)
-        #pt = Point(53.033981, -1.380991, 0)
 
         data = Daily(pt, start, end)
         data = data.fetch().reset_index(level=0)
@@ -305,8 +260,6 @@ def create_trends(df):
                 }
                 data = data.replace({"variable":variable_names})
                 # data.rename(columns = {'variable':'Climate Variable', 'value':'Temp(C)'}, inplace = True)
-
-
                 fig = px.line(
                     data,
                     x='time',
@@ -354,11 +307,11 @@ def _update_after_click_on_1(click_data):
         df_temp = df[(df.decimalLatitude == lat) & (df.decimalLongitude == lon)].copy() ####need to update this query in the future
         plot_pie.object = create_pie(df_temp)
         plot_trends.object = create_trends(df_temp)
-        plot_cards.object = create_cards(df_temp)
         #update land cover
         plot_land_cover.object = create_land_cover_map(df=df_temp)
         disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
-            disp_wind_speed.value, disp_precipitation.value= create_display(df_temp)
+            disp_wind_speed.value, disp_precipitation.value, disp_snow.value, \
+            disp_wdir.value, disp_wpgt.value, disp_pres.value = create_display(df_temp)
         
 ## function to download dataframe when button is pressed
 def get_csv():
@@ -399,11 +352,11 @@ def fetch_data(input):
 
             ###update plot objects
             plot_scatter.object = occ_plot(df, species.value)
-            plot_cards.object = create_cards(df_temp)
             plot_pie.object = create_pie(df_temp)
             plot_trends.object = create_trends(df_temp)
             disp_deg_urban.value, disp_radiance.value, disp_avg_temp.value,\
-                 disp_wind_speed.value, disp_precipitation.value, disp_wind_dir.value = create_display(df_temp)
+                 disp_wind_speed.value, disp_precipitation.value, disp_snow.value, \
+                    disp_wdir.value, disp_wpgt.value, disp_pres.value = create_display(df_temp)
 
             plot_species.object = species_counts(df, country.value, start, end)
             display_data.value = df[cols]
@@ -436,10 +389,7 @@ plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1150, height=450)
 plot_species = pn.pane.Plotly(species_counts(),  height=600, width=550)
 
 #invasice species plot
-plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df),  height=400,width=550)
-
-###instantiate the cards plot
-plot_cards = pn.pane.Plotly(create_cards(df_initial), width=550, height=400)
+plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df),  height=300,width=650)
 
 ###instantiate the pie plot
 plot_pie = pn.pane.Plotly(create_pie(df_initial), width=550, height=450)
@@ -463,24 +413,23 @@ button.on_click(fetch_data)
 button_map.on_click(update_map)
 
 #instantiate display
-info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (C°)"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization (0 being rural and 3 is maximum urbanized)"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens, a measure of light pollution"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (°C)"><i class="bi-info-circle"></i></i></a>""", width=85)
 info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in cm"><i class="bi-info-circle"></i></i></a>""", width=85)
+info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in mm"><i class="bi-info-circle"></i></i></a>""", width=85)
 
 disp_deg_urban = pn.indicators.Number(
     name='Deg Urban', value=2.9, format='{value}', font_size ='24pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=121)
+    colors=[(0, '#68855C'), (2, '#D9AF6B'), (3, '#855C75')], width=121)
 
 disp_radiance = pn.indicators.Number(
     name='Radiance', value=24.8, format='{value}', font_size ='24pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=100)
+    colors=[(0, '#68855C'), (5, '#D9AF6B'), (30, '#855C75')], width=100)
 
 disp_avg_temp = pn.indicators.Number(
     name='Avg Temp', value=12.4, format='{value}C', font_size ='24pt',
-
-    colors=[(25, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')], width=120)
+    colors=[(5, '#68855C'), (20, '#D9AF6B'), (35, '#855C75')], width=120)
 
 disp_wind_speed = pn.indicators.Number(
     name='Wind Speed', value=23, format='{value}mps', font_size ='24pt', 
@@ -488,7 +437,23 @@ disp_wind_speed = pn.indicators.Number(
 
 disp_precipitation = pn.indicators.Number(
     name='Precipitation', value=0.2, format='{value}mm', font_size ='24pt', 
-    colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=130)
+    colors=[(0, '#68855C'), (5, '#D9AF6B'), (10, '#855C75')], width=130)
+
+disp_snow = pn.indicators.Number(
+    name='Snow Depth', value=None, format='{value}mm', font_size ='24pt', 
+    colors=[(0, '#68855C'), (10, '#D9AF6B'), (50, '#855C75')], width=225)
+
+disp_wdir = pn.indicators.Number(
+    name='Wind Direction', value=255, format='{value} deg', font_size ='24pt',
+    colors=[(0, '#68855C'), (355, '#D9AF6B'), (500, '#855C75')], width=225)
+
+disp_wpgt = pn.indicators.Number(
+    name='Wind Peak Gust', value=38.9, format='{value}km/hr', font_size ='24pt', 
+    colors=[(0, '#68855C'), (20, '#D9AF6B'), (35, '#855C75')], width=225)
+
+disp_pres = pn.indicators.Number(
+    name='Air Pressure', value=None, format='{value}hPa', font_size ='24pt', 
+    colors=[(950, '#68855C'), (1013, '#D9AF6B'), (1200, '#855C75')], width=225)
 
 
 ############## The main template to render, sidebar for text
@@ -534,27 +499,22 @@ template.main[5:6, 6:8] = pn.Row(disp_avg_temp, info_temp)
 template.main[5:6, 8:10] = pn.Row(disp_precipitation, info_precipitation)
 template.main[5:6, 10:12] = pn.Row(disp_wind_speed, info_wind_speed)
 
-
 template.main[6:9, 2:7] = pn.Column(plot_pie)
-
-template.main[6:9, 7:12] = pn.Column(plot_cards)
-
-template.main[9:12, 2:12] = pn.Column(plot_trends)
-
-template.main[12:15, 2:7] = pn.Column(plot_invasive_species)
-
-# template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
 
 land_cover_title = pn.pane.HTML("""Land Cover Classification Labels""",
 style={'padding-left': '10px', 'font-size': '16px'}, width=500)
-template.main[12:15, 7:12] = pn.Column(land_cover_title, plot_land_cover, width = 500)
+template.main[6:9, 7:12] = pn.Column(land_cover_title, plot_land_cover, width = 500)
 
+template.main[9:12, 2:12] = pn.Column(plot_trends)
 
-#static_text = pn.widgets.StaticText(name='Land Cover', value='', width = 200)
-# template.main[:1, 2:] = pn.Column(static_text,pn.Row(start_date, end_date, country, button, height=10))
-#template.main[12:15, 7:12] = pn.Column(static_text,plot_land_cover)
+template.main[12:13, 2:4] = disp_snow
+template.main[12:13, 4:6] = disp_wdir
+template.main[13:14, 2:6] = disp_wpgt
+template.main[13:14, 4:6] = disp_pres
 
-template.main[15:18, 2:12]= pn.Column(file_download_csv, display_data)
+template.main[12:14, 6:12] = pn.Column(plot_invasive_species)
+
+template.main[14:16, 2:12]= pn.Column(file_download_csv, display_data)
 
 ## tells the terminal command to run the template variable as a dashboard
 template.servable();
