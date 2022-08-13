@@ -1,4 +1,4 @@
-# 🌏 GBIF powered by covariates
+# 🐾 GBIF powered by covariates
 > &#x20;🐸 Open-access biodiversity data
 
 # Documentation and Caveats
