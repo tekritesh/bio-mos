@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-# 🐾 GBIF powered by covariates
-> &#x20;🐸 Open-access biodiversity data
-=======
 # 🐾 BIO-MOS
 > &#x20;🐸 GBIF powered by covariates, Open-access biodiversity data
->>>>>>> 624e186f625e8bac5f43fdd6120cb3da3cc1fc3d
 
 # Documentation and Caveats
 
@@ -201,6 +196,47 @@ This website helps to visualize the data we are storing in the backend. The user
 * We plan to incorporate additional variable requests that can help with biodiversity modeling
 * We will also update variables like buffer zone radius, bounding box size if evidence for better thresholds is provided.
 
+
+## Directory Structure
+
+```
+bio-conservation
+├─ .gitignore
+├─ README.md
+├─ airflow_pipeline
+│  ├─ README.md
+│  └─ dags
+│     ├─ bigquery_load.py
+│     ├─ gbif_modules.py
+│     └─ main_pipeline.py
+├─ assets
+├─ biomos
+│  ├─ README.md
+│  ├─ biomos
+│  │  ├─ __init__.py
+│  │  ├─ climate.py
+│  │  ├─ human_interference.py
+│  │  ├─ land_cover.py
+│  │  ├─ soil_info.py
+│  │  └─ species.py
+│  ├─ poetry.lock
+│  ├─ pyproject.toml
+│  └─ tests
+│     ├─ __init__.py
+│     └─ test_biomos.py
+├─ dashboard
+│  ├─ README.md
+│  ├─ assets
+│  │  ├─ favicon.png
+│  │  ├─ gbif_combined.csv
+│  │  ├─ js
+│  │  │  ├─ bootstrap.bundle.js.map
+│  │  │  └─ bootstrap.bundle.min.js
+│  │  ├─ side_bar.jpg
+│  │  ├─ side_bar_2.jpg
+│  │  └─ soil_temp.csv
+│  ├─ dash.py
+```
 
 ## Resources
 
