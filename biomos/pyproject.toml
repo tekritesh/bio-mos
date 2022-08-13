@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "biomos"
+version = "0.1.0"
+description = "Landing Station for all your GBIF co-variates"
+authors = ["tekritesh <ritesh.tekriwal03@gmail.com>"]
+
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "~3.9"
+noaa-sdk = "^0.1.21"
+pandas = "^1.4.3"
+meteostat = "^1.6.3"
+DateTime = "^4.5"
+logger = "^1.4"
+earthengine-api = "^0.1.317"
+mkdocs = "^1.3.0"
+pygbif = "^0.6.1"
+panel = "^0.13.1"
+plotly = "^5.9.0"
+db-dtypes = "^1.0.2"
+wordcloud = "^1.8.2"
+OWSLib = "^0.26.0"
+geemap = "^0.16.4"
+PyYAML = "^6.0"
+ipyleaflet = "^0.17.0"
+google-cloud-bigquery = "^3.3.1"
+geopandas = "^0.11.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
