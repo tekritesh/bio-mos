@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gbif"
+name = "biomos"
 version = "0.1.0"
 description = "Landing Station for all your GBIF co-variates"
 authors = ["tekritesh <ritesh.tekriwal03@gmail.com>"]
@@ -21,6 +21,9 @@ panel = "^0.13.1"
 plotly = "^5.9.0"
 db-dtypes = "^1.0.2"
 wordcloud = "^1.8.2"
+OWSLib = "^0.26.0"
+geemap = "^0.16.4"
+PyYAML = "^6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

@@ -41,9 +41,3 @@ poetry env info
 - Select Python Interpreter
 - Enter Interpreter Path
 - Use the path as per ```poetry env info``` to add your ``venv`` to vs code
-
-#### Writing your function
-To be added
-
-#### Publish this package
-To be added
