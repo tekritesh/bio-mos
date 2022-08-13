@@ -465,8 +465,8 @@ disp_pres = pn.indicators.Number(
 ############## The main template to render, sidebar for text
 
 template = pn.template.FastGridTemplate(
-    title="🦭 Bio-mos",
-    header = [pn.Column('','<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
+    title="🐾 bio-mos",
+    header = [pn.Column('<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
     accent = '#4f6457',
     background_color = '#f7f4eb',
     # favicon = 'https://img.icons8.com/external-flaticons-lineal-color-flat-icons/452/external-earth-plants-flaticons-lineal-color-flat-icons-2.png',
