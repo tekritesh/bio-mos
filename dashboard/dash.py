@@ -39,24 +39,15 @@ background-color: #d9d1bb !important;
 
 pn.extension(raw_css=[css])
 
+# Shall we move this to a yaml? 
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
-
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/mnt/.cred/gbif-challenge-a41b66fe5446.json" ##our vm
-
-credentials = ee.ServiceAccountCredentials(service_account, "../gcp_keys.json") ##ritesh advika
-#credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
-#credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "./.cred/gcp_keys.json" 
+credentials = ee.ServiceAccountCredentials(service_account, "./.cred/gcp_keys.json")
 ee.Initialize(credentials)
-
 client = bigquery.Client()
 
-
-df = pd.read_csv('gbif_combined.csv')
-# df = pd.read_csv("/Users/riteshtekriwal/Work/Data/Raw/bio-conservation/test_combined.csv")
-
+df = pd.read_csv('./assets/gbif_combined.csv')
 
 ################################## All the filter widgets we need
 start_date = pn.widgets.DatePicker(name='Start Date', start = dt.date(2021, 12, 1),
@@ -168,7 +159,7 @@ def create_display(df):
 ## function for creating the pie chart for soil
 def create_pie(df):   
     if len(df) == 0:
-        df = pd.read_csv("soil_temp.csv")
+        df = pd.read_csv("./assets/soil_temp.csv")
 
     else:
     # Standardizing Units to g/Kg
@@ -469,12 +460,13 @@ disp_pres = pn.indicators.Number(
 ############## The main template to render, sidebar for text
 
 template = pn.template.FastGridTemplate(
-    title="🦭 BIO-MOS",
+    title="🦭 Bio-mos",
     header = [pn.Column('','<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
     accent = '#4f6457',
     background_color = '#f5f5f5',
     # favicon = 'https://img.icons8.com/external-flaticons-lineal-color-flat-icons/452/external-earth-plants-flaticons-lineal-color-flat-icons-2.png',
     favicon = 'https://img.icons8.com/external-icongeek26-linear-colour-icongeek26/452/external-earth-zoology-icongeek26-linear-colour-icongeek26.png',
+    # favicon = './assets/favicon.png'
     # background_color = '#f7f4eb',
     theme_toggle = False,
     neutral_color = '#ffffff',
@@ -490,8 +482,9 @@ template.main[0:17, 0:2] = pn.Column(
                     that combine environmental data from disparate sources. We are interested in integrating and visualizing variables like climate, soil, and 
                     human interference data alongside the biodiversity data from GBIF.  <br> <br>Here you can visualize, query, and download augmented GBIF data to further conduct analyses on our precious but dwindling biodiversity.
                     Start by selecting your dates and country of interest.""", width = 210),
-                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=350, height = 350, margin=(0,0,0,15)),
-                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=350, height = 350, margin=(25,0,0,-175)),
+                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(40,0,0,30)),
+                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(60,0,0,-430)),
+                                            pn.pane.JPG('./assets/side_bar.jpg', width=600, height = 650, margin=(60,0,0,-150)),
                                             # operating_instruction
                                             ), sizing_mode='stretch_both', height=3000, width=210)
 
