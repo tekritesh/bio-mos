@@ -154,7 +154,7 @@ We provide the data using a **10km** radius buffer zone and compute the **averag
 
 Degree of urbanization is quantified on a scale of 0-3:
 
-- Inhabited areas - 0
+- Uninhabited areas - 0
 - Rural grid cells - 1
 - Low Density Clusters (towns and cities) - 2&#x20;
 - High Density Clusters (cities) - 3
