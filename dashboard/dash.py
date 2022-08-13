@@ -124,7 +124,8 @@ def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df)
 
     latitude_min = latitude - (displacement / r_earth) * (180 / pi)
     longitude_min = longitude - (displacement / r_earth) * (180 / pi) / cos(latitude * pi / 180)
-    region = ee.Geometry.BBox(longitude_min, latitude_min, longitude_max, latitude_max)
+    # region = ee.Geometry.BBox(longitude_min, latitude_min, longitude_max, latitude_max)
+    region = ee.Geometry.BBox(-179, -89, 179, 89)
     
     dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
     classification = dw.select('label')
@@ -229,19 +230,28 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
 def invasive_species_counts(df=df):
     df_temp = df[df['is_invasive'] == True].copy() 
     if not df_temp.empty:
-        title = 'Invasive-Species Occurrence Distribution'
-        df_temp = df_temp['species'].value_counts().rename_axis('species').reset_index(name='Count')
-        df_temp = df_temp.sort_values(by = ['Count'],ascending=[False])
+
+        title = 'Invasive Species Occurrence Distribution'
+        df_temp = df_temp['species'].value_counts().rename_axis('Species').reset_index(name='Occurence Count')
+        df_temp = df_temp.sort_values(by = ['Occurence Count'],ascending=[False])
+        # df_temp = df['species'].value_counts().rename_axis('Species').reset_index(name='Count')
+        # df_temp = df_temp.sort_values(by = ['Count'],ascending=[False])
     else:
         title = 'No Invasive Species Found for the country and date selected'
-    fig = px.histogram(df_temp, x='Count', y="species",
-                    category_orders=dict(species=list(df_temp.species.unique())),
-                    title = title,
-                    color='species',
-                    labels=dict(species='Species'),
-                    template="plotly_white",
-                    color_discrete_sequence=px.colors.qualitative.Antique
-                    )    
+    
+    fig = px.bar(
+        df_temp.head(10),
+        x = 'Occurence Count',
+        y = "Species",
+        color="Species",
+        template = 'plotly_white',
+        color_discrete_sequence= px.colors.qualitative.Antique,
+        text = 'Occurence Count',
+        title = title
+    )
+
+   
+    return fig
     return fig
 
 ## Climate timeseries trends 
@@ -273,7 +283,7 @@ def create_trends(df):
                     color='variable',
                     color_discrete_sequence=px.colors.qualitative.Antique,
                     template='plotly_white',
-                    title=f"Climate Covariates for Lat,Long: ({df.loc[0,'decimalLatitude']}, {df.loc[0,'decimalLongitude']})",
+                    title=f"Climate Covariates for (Lat, Lng): ({df.loc[0,'decimalLatitude']}, {df.loc[0,'decimalLongitude']})",
                     labels=dict(variable="Climate Variable", value="Temp(C)",time='Date')
                     )
 
@@ -420,7 +430,7 @@ button_map.on_click(update_map)
 
 #instantiate display
 
-info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of urbanization, 0 being uninhabited and 3 being cities"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of urbanization, 0 being uninhabited and 3 being cities"><img src="./assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens, a measure of light pollution"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (°C)"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
