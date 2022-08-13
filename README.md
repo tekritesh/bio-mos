@@ -1,5 +1,5 @@
-# 🐾 GBIF powered by covariates
-> &#x20;🐸 Open-access biodiversity data
+# 🐾 BIO-MOS
+> &#x20;🐸 GBIF powered by covariates, Open-access biodiversity data
 
 # Documentation and Caveats
 
