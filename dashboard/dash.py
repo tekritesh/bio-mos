@@ -7,6 +7,7 @@ import time
 from io import BytesIO
 from IPython.display import HTML
 from ipyleaflet import LegendControl
+from math import pi, cos
 
 import panel as pn
 import param
@@ -125,8 +126,17 @@ def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df)
     repeat_df.columns = df_temp.columns
     latitude = repeat_df.latitude.values[0]
     longitude = repeat_df.longitude.values[0]
+
+    #bounding box
+    r_earth = 6371000.0
+    displacement = 100
+    latitude_max = latitude + (displacement / r_earth) * (180 / pi)
+    longitude_max = longitude + (displacement / r_earth) * (180 / pi) / cos(latitude * pi / 180)
+
+    latitude_min = latitude - (displacement / r_earth) * (180 / pi)
+    longitude_min = longitude - (displacement / r_earth) * (180 / pi) / cos(latitude * pi / 180)
+    region = ee.Geometry.BBox(longitude_min, latitude_min, longitude_max, latitude_max)
     
-    region = ee.Geometry.BBox(-179, -89, 179, 89)
     dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
     classification = dw.select('label')
     dwVisParams = {'min': 0, 'max': 8, 'palette': [
@@ -135,7 +145,7 @@ def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df)
     map1 = geemap.Map()
 
     map1.add_basemap('TERRAIN')
-    map1.setCenter(longitude, latitude, 7)
+    map1.setCenter(longitude, latitude, 12)
     map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
     map1.add_points_from_xy(repeat_df, popup=['species', 'latitude', 'longitude'], x='longitude', y='latitude',
                              layer_name='marker')
