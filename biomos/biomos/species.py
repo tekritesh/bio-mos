@@ -14,7 +14,7 @@ class Occurence():
         self.log = logging.getLogger("climate-logger")
         self.log.setLevel(log_level)
     
-    def get_occurrences(self,eventDate, country, offset = 0):
+    def get_occurrences(self,event_date, country, offset = 0):
         """function to get the occurrences from gbif. max rows in one call is 300; we use a loop
         args:
             eventDate (str): day to get the data for
@@ -33,7 +33,7 @@ class Occurence():
         output_rows = batch_size
         out_df = pd.DataFrame()
         while output_rows >= batch_size:
-            temp_df = pd.DataFrame(pygbif.occurrences.search(eventDate=eventDate, country=country,
+            temp_df = pd.DataFrame(pygbif.occurrences.search(eventDate=event_date, country=country,
                                             offset=offset, hasCoordinate=True)['results'])
             offset += batch_size
             output_rows = temp_df.shape[0]

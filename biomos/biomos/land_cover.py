@@ -14,21 +14,11 @@ class LandCoverLabel():
     def __init__(self, log_level = logging.INFO):
         self.log = logging.getLogger("climate-logger")
         self.log.setLevel(log_level)
-        # service_account = '292293468099-compute@developer.gserviceaccount.com'
-        # credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json')
         try:
             ee.Initialize()
         except Exception as e:
             ee.Authenticate()
             ee.Initialize()
-
-    # def get_gbif_data(self):
-    #     brazil_data = pd.read_csv('bquxjob_2c525673_181e4342f32.csv')
-    #     uk_data = pd.read_csv('bquxjob_39d5dfa3_181e432946c.csv')
-
-    #     all_data = pd.concat([brazil_data, uk_data])
-    #     all_data = all_data.reset_index(drop=True)
-    #     return all_data
 
     def __create_bounding_box(self, lat, lon):
         r_earth = 6371000.0
