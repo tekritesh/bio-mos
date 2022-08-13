@@ -37,8 +37,10 @@ background-color: #d9d1bb !important;
 ''')
 
 
-pn.extension(raw_css=[css])
-
+pn.extension(raw_css=[css], 
+            css_files = ['https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css',
+                         'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css'],
+            js_files={'bootstrap_popper': 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'})
 # Shall we move this to a yaml? 
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
@@ -132,7 +134,7 @@ def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df)
     map1 = geemap.Map()
 
     map1.add_basemap('TERRAIN')
-    map1.setCenter(longitude, latitude, 12)
+    map1.setCenter(longitude, latitude, 7)
     map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
     map1.add_points_from_xy(repeat_df, popup=['species', 'latitude', 'longitude'], x='longitude', y='latitude',
                              layer_name='marker')
@@ -271,7 +273,7 @@ def create_trends(df):
                     color='variable',
                     color_discrete_sequence=px.colors.qualitative.Antique,
                     template='plotly_white',
-                    title=f"Climate Covariates for (Lat,Lng0: ({df.loc[0,'decimalLatitude']}, {df.loc[0,'decimalLongitude']})",
+                    title=f"Climate Covariates for Lat,Long: ({df.loc[0,'decimalLatitude']}, {df.loc[0,'decimalLongitude']})",
                     labels=dict(variable="Climate Variable", value="Temp(C)",time='Date')
                     )
 
@@ -465,7 +467,7 @@ disp_pres = pn.indicators.Number(
 ############## The main template to render, sidebar for text
 
 template = pn.template.FastGridTemplate(
-    title="🐾 bio-mos",
+    title="🐾 BIO-MOS",
     header = [pn.Column('<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
     accent = '#4f6457',
     background_color = '#f7f4eb',
