@@ -29,13 +29,30 @@ Next, we describe the various data sources that are currently available in the p
 
 NOAA
 
-<br>
+Climate variables like temperature, precipitation, pressure are crucial to any sort of biodiversity modeling. 
+Climate variables can be analyzed to find impact of drastic climate events or long term global warming effects on our biodiversity populations as well as migratory patterns. We use data provided by the [National Oceanic and Atmospheric Administration (NOAA)](https://www.noaa.gov/) due to it's quality, coverage, and popular adoption.
+
+The following variables are currently included in our database.
+
+| **Code** | **Meaning**             |
+| -------- | ----------------------- |
+| TAVG     | Average Temperature     |
+| TMIN     | Minimum Temperature     |
+| TMAX     | Maximum Temperature     |
+| PRCP     | Total Precipitation     |
+| WDIR     | Wind (From) Direction   |
+| WSPD     | Average Wind Speed      |
+| WPGT     | Wind Peak Gust          |
+| RHUM     | Relative Humidity       |
+| PRES     | Sea-Level Air Pressure  |
+| SNOW     | Snow Depth              |
+| TSUN     | Total Sunshine Duration |
 
 ## Soil
 
-Soil characteristic are linked to vegetation and plant life in the area which influnces the entire ecosystem. Soil properties can be used as an important feature in Species Distribution modelling (SDM) as we expect similar biodiversity in areas with similar physical and chemical soil profile.
+Soil characteristics in a region are linked to vegetation and plant life and influence the ecosystem. Soil properties can be used as an important feature in techniques like Species Distribution modeling (SDM) as similar biodiversity can be expected in areas with similar physical and chemical soil profile.
 
-To get soil profile we use SoilGrids 250m resolution data (https://www.isric.org/explore/soilgrids)
+We source our soil profiles from [**SoilGrids 250m resolution data**](https://www.isric.org/explore/soilgrids)
 
 ### Properties
 
@@ -66,19 +83,16 @@ The table below shows the properties currently mapped with SoilGrids, their desc
 
 ###
 
-We use the 0-5cm mean depth for creating the soil profile.
-
-Assumption: We use a bounding box of 1000m around the occurrence location and take mean values of soil variable to account for 
-resolution difference and errors in exact latitutde and longitude of reported GBIF occurence
+We use the 0-5cm mean depth for creating the soil profile. A bounding box of 1000m around the occurrence location is used to compute the mean value of the soil variable in that region. This accounts for resolution difference and errors in exact latitude and longitude of the reported GBIF occurrence.
 
 
 ## Land Cover
 
-Land Cover refers to the physical terrian at a location. Land Cover labels can help ecologist quickly conceptualize the physical environment around an occurence. For getting land cover labels we make use of Google's Dynamic World (https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1) which has spatial resolution of 10m.
+Land cover refers to the physical terrian of a location. Land cover labels can help ecologists quickly conceptualize the physical environment around an occurrence. For getting land cover labels, we use [**Google's Dynamic World**](https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1) which has a spatial resolution of 10m.
 
 ### Land Cover Labels
 
-The dynamic world datasett contains near real-time (NRT) land use land cover (LULC) predictions created from Sentinel-2 imagery for nine land use land cover (LULC) classes as described in the table below.
+The dynamic world dataset contains near real-time (NRT) land use land cover (LULC) predictions created from Sentinel-2 imagery for nine land use land cover (LULC) classes as described in the table below.
 
 | Name              |  Description
 | -----------       | ----------------------------
@@ -93,8 +107,7 @@ The dynamic world datasett contains near real-time (NRT) land use land cover (LU
 | Snow and Ice      | Permanent and seasonal snow cover
 | Label             | Index of the band with the highest estimated probability of above labels
 
-Assumption: We use a bounding box of 1000m to grab the dynamic world imagery for a particular location and consider the land cover label to be the label with the highest number of occurence in that bounding box. This is to account for spatial resolution of the data and errors in GBIF's occurence data latitude and longitude values.
-
+We use a bounding box of 1000m (side length) to grab the dynamic world imagery for a particular location. and The mode of the available land cover labels is used as the representative land cover of the bounding box region. This is to account for spatial resolution of the data and potential errors in GBIF's occurence data latitude and longitude values.
 
 <br>
 
@@ -102,7 +115,7 @@ Assumption: We use a bounding box of 1000m to grab the dynamic world imagery for
 
 ### Light Pollution
 
-Light pollution is a major disturbance for biodiversity, including insects and migratory birds. As habitats shrink, more artificial lights seep into the natural world during the night. We use the data from the "Open night time lights" project by the world bank. The data is captured by the VIIRS (Visible Infrared Imaging Radiometer Suite) satellite.&#x20;
+Light pollution is a major disturbance to biodiversity, including insects and migratory birds. As habitats shrink, more artificial lights seep into the natural world during the night. We use the data from the "Open night time lights" project by the world bank. The data is captured by the VIIRS (Visible Infrared Imaging Radiometer Suite) satellite.&#x20;
 
 The DNB (day night band) are scanning radiometers capable of low-light imaging and are launched onboard sun-synchronous polar-orbiting platforms. They both collect 14 orbits per day, imaging the daytime and nighttime side of the earth every 24 hours at a 750 m (on an edge) spatial resolution.
 
@@ -153,7 +166,7 @@ We provide an average degree of urbanization of a 10km radius zone as 'avg\_deg\
 
 Biodiversity and environmental data are increasing at an exponential scale and will continue to do so. We need to build scalable and robust pipelines and code to handle data that is constantly updated. For our project, we orchestrate our pipeline using Apache Airflow.
 
-Apache airflow is a data orchestration tool to schedule jobs and maintain scalable pipelines. We chose airflow because it is free and open source. it also integrates well with different cloud platforms and has the largest user support community.
+[Apache airflow](https://airflow.apache.org/) is a data orchestration tool to schedule jobs and maintain scalable pipelines. We chose airflow because it is free and open source. it also integrates well with different cloud platforms and has the largest user support community.
 
 Our pipeline fetches daily data from the GBIF API. The next steps are parallel data fetching and integration of our varied data sources (modular and can be easily extended to include more sources/eliminate unimportant ones) corresponding the GBIF temporal and spatial data. Our final step is to combine all the sources which can be queried by our visualization website or the end user.&#x20;
 
@@ -167,16 +180,20 @@ The figure below demonstrates our pipeline run for a select number of days. The 
 
 ![Airflow Calendar](assets/airflow2.png)
 
-# Website and UX
+# Website
 
-<br>
+We host a website at: 
+This website helps to visualize the data we are storing in the backend. The user can query, interact, and download the backend data through this simple to use interface. 
 
 # Future Work
 
-1. &#x20;Extend prototype for all countries (Present demonstration is only for Brazil and the Great Britain)
-2. More data sources upon request
-3. Update variables like buffer zone radius, bounding box size if evidence for better thresholds is provided.
-4. &#x20;Productionize pipeline in the cloud
+1. Since our goal is to enhance GBIF's capabilies and adoption rate, our next steps will be to find the most optimal way to integrate our modular project with GBIF. As of now we foresee 3 options (listed in descending order of priority):
+    a. We integrate our module with the backend available at GBIF by providing engineering support during the integration.
+    b. We provide the code as a package (R,Python) that can be integrated into an individual user's codebase.
+    c. We host the pipeline as GBIF's complementary entity and populate the backend to be queries by the users.
+2. Extend prototype for all countries (Present prototype is only for Brazil and the Great Britain)
+3. We plan to incorporate additional variable requests that can help with biodiversity modeling
+4. We will also update variables like buffer zone radius, bounding box size if evidence for better thresholds is provided.
 
 <br>
 
@@ -193,7 +210,6 @@ The figure below demonstrates our pipeline run for a select number of days. The 
 
 [Github Code Repository ](https://github.com/tekritesh/bio-conservation "GitHub - tekritesh/bio-conservation")
 
-\<gcp>
 
 ## License
 
