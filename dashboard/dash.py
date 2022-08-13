@@ -7,6 +7,7 @@ import time
 from io import BytesIO
 from IPython.display import HTML
 from ipyleaflet import LegendControl
+from math import pi, cos
 
 import panel as pn
 import param
@@ -36,10 +37,8 @@ background-color: #d9d1bb !important;
 ''')
 
 
-pn.extension(raw_css=[css], 
-            css_files = ['https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css',
-                         'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css'],
-            js_files={'bootstrap_popper': 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'})
+pn.extension(raw_css=[css])
+
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
@@ -118,8 +117,17 @@ def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df)
     repeat_df.columns = df_temp.columns
     latitude = repeat_df.latitude.values[0]
     longitude = repeat_df.longitude.values[0]
+
+    #bounding box
+    r_earth = 6371000.0
+    displacement = 100
+    latitude_max = latitude + (displacement / r_earth) * (180 / pi)
+    longitude_max = longitude + (displacement / r_earth) * (180 / pi) / cos(latitude * pi / 180)
+
+    latitude_min = latitude - (displacement / r_earth) * (180 / pi)
+    longitude_min = longitude - (displacement / r_earth) * (180 / pi) / cos(latitude * pi / 180)
+    region = ee.Geometry.BBox(longitude_min, latitude_min, longitude_max, latitude_max)
     
-    region = ee.Geometry.BBox(-179, -89, 179, 89)
     dw = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1").filterDate(start_date, end_date).filterBounds(region).mode()
     classification = dw.select('label')
     dwVisParams = {'min': 0, 'max': 8, 'palette': [
@@ -128,7 +136,7 @@ def create_land_cover_map(start_date="2021-12-01", end_date="2022-05-01", df=df)
     map1 = geemap.Map()
 
     map1.add_basemap('TERRAIN')
-    map1.setCenter(longitude, latitude, 7)
+    map1.setCenter(longitude, latitude, 12)
     map1.addLayer(classification, dwVisParams, 'Classified Image', opacity= 0.8)
     map1.add_points_from_xy(repeat_df, popup=['species', 'latitude', 'longitude'], x='longitude', y='latitude',
                              layer_name='marker')
@@ -413,11 +421,13 @@ button.on_click(fetch_data)
 button_map.on_click(update_map)
 
 #instantiate display
-info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization (0 being rural and 3 is maximum urbanized)"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens, a measure of light pollution"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (°C)"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><i class="bi-info-circle"></i></i></a>""", width=85)
-info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in mm"><i class="bi-info-circle"></i></i></a>""", width=85)
+
+info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (C°)"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in cm"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+
 
 disp_deg_urban = pn.indicators.Number(
     name='Deg Urban', value=2.9, format='{value}', font_size ='24pt', 
