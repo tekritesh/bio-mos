@@ -43,12 +43,12 @@ pn.extension(raw_css=[css],
 
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "../gcp_keys.json" ## ritesh computer
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/mnt/.cred/gbif-challenge-a41b66fe5446.json" ##our vm
 
-credentials = ee.ServiceAccountCredentials(service_account, "../gcp_keys.json") ##ritesh advika
-#credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
+#credentials = ee.ServiceAccountCredentials(service_account, "../gcp_keys.json") ##ritesh advika
+credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json')
 #credentials = ee.ServiceAccountCredentials(service_account, '/mnt/.cred/gbif-challenge-a41b66fe5446.json') ###our vm
 ee.Initialize(credentials)
 
@@ -428,19 +428,19 @@ disp_radiance = pn.indicators.Number(
     colors=[(0, '#68855C'), (5, '#D9AF6B'), (30, '#855C75')], width=100)
 
 disp_avg_temp = pn.indicators.Number(
-    name='Avg Temp', value=12.4, format='{value}C', font_size ='24pt',
+    name='Avg Temp', value=12.4, format='{value} C', font_size ='24pt',
     colors=[(5, '#68855C'), (20, '#D9AF6B'), (35, '#855C75')], width=120)
 
 disp_wind_speed = pn.indicators.Number(
-    name='Wind Speed', value=23, format='{value}mps', font_size ='24pt', 
+    name='Wind Speed', value=23, format='{value} mps', font_size ='24pt', 
     colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')], width=138)
 
 disp_precipitation = pn.indicators.Number(
-    name='Precipitation', value=0.2, format='{value}mm', font_size ='24pt', 
+    name='Precipitation', value=0.2, format='{value} mm', font_size ='24pt', 
     colors=[(0, '#68855C'), (5, '#D9AF6B'), (10, '#855C75')], width=130)
 
 disp_snow = pn.indicators.Number(
-    name='Snow Depth', value=None, format='{value}mm', font_size ='24pt', 
+    name='Snow Depth', value=None, format='{value} mm', font_size ='24pt', 
     colors=[(0, '#68855C'), (10, '#D9AF6B'), (50, '#855C75')], width=225)
 
 disp_wdir = pn.indicators.Number(
@@ -448,11 +448,11 @@ disp_wdir = pn.indicators.Number(
     colors=[(0, '#68855C'), (355, '#D9AF6B'), (500, '#855C75')], width=225)
 
 disp_wpgt = pn.indicators.Number(
-    name='Wind Peak Gust', value=38.9, format='{value}km/hr', font_size ='24pt', 
+    name='Wind Peak Gust', value=38.9, format='{value} km/hr', font_size ='24pt', 
     colors=[(0, '#68855C'), (20, '#D9AF6B'), (35, '#855C75')], width=225)
 
 disp_pres = pn.indicators.Number(
-    name='Air Pressure', value=None, format='{value}hPa', font_size ='24pt', 
+    name='Air Pressure', value=None, format='{value} hPa', font_size ='24pt', 
     colors=[(950, '#68855C'), (1013, '#D9AF6B'), (1200, '#855C75')], width=225)
 
 
@@ -509,7 +509,7 @@ template.main[9:12, 2:12] = pn.Column(plot_trends)
 
 template.main[12:13, 2:4] = disp_snow
 template.main[12:13, 4:6] = disp_wdir
-template.main[13:14, 2:6] = disp_wpgt
+template.main[13:14, 2:4] = disp_wpgt
 template.main[13:14, 4:6] = disp_pres
 
 template.main[12:14, 6:12] = pn.Column(plot_invasive_species)
