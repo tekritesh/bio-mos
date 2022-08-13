@@ -5,11 +5,12 @@
 
 This document serves to explain the assumptions and design decisions that brought forward this product. The document is organized as follows:
 
-- Objective
-- Data Sources and decisions
-- Data Pipeline and Automation
-- User Experience
-- ✨Future Work
+- [Objective](#objective)
+- [Data Sources and Decisions](#data-sources-and-decisions)
+- [Data Pipeline and Automation](#data-pipeline-and-automation)
+- [User Experience](#website)
+- [✨Future Work](#future-work)
+- [Directory Structure and Usage Instructions](#directory-structure-and-usage-instructions)
 
 # Objective
 
@@ -197,7 +198,7 @@ This website helps to visualize the data we are storing in the backend. The user
 * We will also update variables like buffer zone radius, bounding box size if evidence for better thresholds is provided.
 
 
-## Directory Structure
+## Directory Structure and Usage Instructions
 
 ```
 bio-conservation
