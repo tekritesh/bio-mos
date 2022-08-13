@@ -60,19 +60,19 @@ df = pd.read_csv('gbif_combined.csv')
 
 ################################## All the filter widgets we need
 start_date = pn.widgets.DatePicker(name='Start Date', start = dt.date(2021, 12, 1),
-                                  end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 4), height=50, width=200)
+                                  end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 4), height=50, width=175)
 
 end_date = pn.widgets.DatePicker(name='End Date', start = dt.date(2021, 12, 1),
-                                  end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 5), height=50, width=200)
+                                  end=dt.date(2022, 4, 30), value = dt.date(2022, 4, 5), height=50, width=175)
 
 country = pn.widgets.Select(name='Country', options=['United Kingdom of Great Britain and Northern Ireland','Brazil'], 
-                            value = 'United Kingdom of Great Britain and Northern Ireland' , width=500)
-species = pn.widgets.Select(name='Select Species',
+                            value = 'United Kingdom of Great Britain and Northern Ireland' , width=450)
+species = pn.widgets.Select(name='Species',
                              options=list(df.groupby('species').key.count().\
                                 reset_index(name='count').sort_values(['count'], ascending=False).species),
-                             width = 300)
+                             width = 275)
                              
-button = pn.widgets.Button(name='Fetch Data', width= 300,height = 40,button_type='primary', css_classes=['update_plot_button_custom'])
+button = pn.widgets.Button(name='Fetch Data', width= 225,height = 30,button_type='primary', css_classes=['update_plot_button_custom'])
 
 button_map = pn.widgets.Button(name='Update Map', width= 200,height = 30, button_type='primary', css_classes=['update_map_button_custom'])
 
@@ -110,8 +110,9 @@ def occ_plot(df=df, species='Anemone nemorosa'):
     fig.update_layout(
         # title='Geo Spatial Occcurence Instances for <>',
         autosize=True,
+        # width=550,
         hovermode='closest',
-        margin={"r":0,"t":0,"l":0,"b":0},
+        margin={"r":160,"t":0,"l":0,"b":0},
         template="plotly_white",
         showlegend=False)
 
@@ -193,10 +194,10 @@ def create_cards(df):
     fig.data[0]['textfont']['size'] = 40
 
     fig.update_layout(
-        title=f'Weather Stats for {df.loc[0,"date"]} & [Lat, Lon]: [{df.loc[0,"decimalLatitude"]}, {df.loc[0,"decimalLongitude"]} ]',
-        autosize=False,
+        title=f'Weather Stats for {df.loc[0,"date"]} & (Lat, Lon): ({df.loc[0,"decimalLatitude"]}, {df.loc[0,"decimalLongitude"]})',
+        autosize=True,
         hovermode='closest',
-        margin={"r":0,"t":100,"l":0,"b":0},
+        margin={"r":0,"t":50,"l":0,"b":0},
         template="plotly_white",
         showlegend=True)
 
@@ -257,17 +258,11 @@ def species_counts(df=df, country = 'United Kingdom of Great Britain and Norther
         x = 'Occurrence Count',
         y = "Species",
         color="Species",
-        color_discrete_sequence=
-        # px.colors.cyclical.IceFire,
-        px.colors.qualitative.Antique,
+        template = 'plotly_white',
+        color_discrete_sequence= px.colors.qualitative.Antique,
         text = 'Occurrence Count',
         title = f'Species Occurrences for {short_name}'
     )
-    fig.update_layout({
-        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-        'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-        })
-
     return fig
 
 ## Function for invasive species count
@@ -284,12 +279,7 @@ def invasive_species_counts(df=df):
                     labels=dict(species='Species'),
                     template="plotly_white",
                     color_discrete_sequence=px.colors.qualitative.Antique
-                    )
-    fig.update_layout({
-    'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-    'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-    })
-    
+                    )    
     return fig
 
 ## Climate timeseries trends 
@@ -324,15 +314,13 @@ def create_trends(df):
                     color='variable',
                     color_discrete_sequence=px.colors.qualitative.Antique,
                     template='plotly_white',
-                    title=f"Climate Covariates for [Lat,Lng]: [{df.loc[0,'decimalLatitude']}, {df.loc[0,'decimalLongitude']}]",
+                    title=f"Climate Covariates for (Lat,Lng0: ({df.loc[0,'decimalLatitude']}, {df.loc[0,'decimalLongitude']})",
                     labels=dict(variable="Climate Variable", value="Temp(C)",time='Date')
                     )
 
                 fig.update_layout(
-                    # title='Geo Spatial Occcurence Instances for <>',
                     autosize=True,
                     hovermode='closest',
-                    # margin={"t":0,"b":0},
                     showlegend=True)
                 fig.add_vline(x=str(df.loc[0,'eventDate'])[:10], ##annotation did not work
                              line_width=1, line_dash="solid", line_color="black")
@@ -442,27 +430,28 @@ def update_map(input):
 df_initial = df[(df.decimalLatitude == 51.458686) & (df.decimalLongitude == 0.073012)].head(1).copy()
 
 ###instantiate the cards plot
-plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1450, height=450)
+plot_trends = pn.pane.Plotly(create_trends(df_initial), width=1150, height=450)
 
 ## species count histogram instantiate
-plot_species = pn.pane.Plotly(species_counts(),  height=600, width=625)
+plot_species = pn.pane.Plotly(species_counts(),  height=600, width=550)
 
 #invasice species plot
-plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df),  height=400,width=625)
+plot_invasive_species = pn.pane.Plotly(invasive_species_counts(df),  height=400,width=550)
 
 ###instantiate the cards plot
-plot_cards = pn.pane.Plotly(create_cards(df_initial), width=600, height=400)
+plot_cards = pn.pane.Plotly(create_cards(df_initial), width=550, height=400)
 
 ###instantiate the pie plot
-plot_pie = pn.pane.Plotly(create_pie(df_initial), width=600, height=450)
+plot_pie = pn.pane.Plotly(create_pie(df_initial), width=550, height=450)
 
-plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map(df=df_initial)), width = 680)
+###instantiate the land cover map
+plot_land_cover = pn.pane.HTML(HTML(create_land_cover_map(df=df_initial)), width = 550)
 
 ## display data, can delete later
-cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','is_invasive','avg_radiance',
-         'land_cover_label', 'tavg', 'tmin', 'tmax', 'prcp','snow','wdir','wspd','phh2o_0_5cm_mean',
+cols = [ 'species','eventDate','decimalLatitude','decimalLongitude','avg_radiance',
+         'land_cover_label', 'tavg', 'tmax', 'phh2o_0_5cm_mean',
         'clay_0_5cm_mean','nitrogen_0_5cm_mean' ]
-display_data = pn.widgets.DataFrame(df[cols].head(9), width=1450)
+display_data = pn.widgets.DataFrame(df[cols].head(9), width=1100)
 
 ## file download button
 file_download_csv = pn.widgets.FileDownload(filename="gbif_covariates.csv", callback=get_csv, button_type="primary")
@@ -481,35 +470,33 @@ info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind 
 info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in cm"><i class="bi-info-circle"></i></i></a>""", width=85)
 
 disp_deg_urban = pn.indicators.Number(
-    name='Deg Urban', value=2.9, format='{value}', font_size ='32pt', 
+    name='Deg Urban', value=2.9, format='{value}', font_size ='24pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=121)
 
 disp_radiance = pn.indicators.Number(
-    name='Radiance', value=24.8, format='{value}', font_size ='32pt', 
+    name='Radiance', value=24.8, format='{value}', font_size ='24pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=100)
 
 disp_avg_temp = pn.indicators.Number(
-    name='Avg Temp', value=12.4, format='{value}C', font_size ='32pt',
+    name='Avg Temp', value=12.4, format='{value}C', font_size ='24pt',
 
-    colors=[(25, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')], width=110)
+    colors=[(25, '#68855C'), (35, '#D9AF6B'), (40, '#855C75')], width=120)
 
 disp_wind_speed = pn.indicators.Number(
-    name='Wind Speed', value=23, format='{value}mps', font_size ='32pt', 
-    colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')], width=140)
+    name='Wind Speed', value=23, format='{value}mps', font_size ='24pt', 
+    colors=[(2, '#68855C'), (5, '#D9AF6B'), (15, '#855C75')], width=138)
 
 disp_precipitation = pn.indicators.Number(
-    name='Precipitation', value=0.2, format='{value}mm', font_size ='32pt', 
+    name='Precipitation', value=0.2, format='{value}mm', font_size ='24pt', 
     colors=[(33, '#68855C'), (66, '#D9AF6B'), (100, '#855C75')], width=130)
 
 
 ############## The main template to render, sidebar for text
 
 template = pn.template.FastGridTemplate(
-    title="GBIF Powered by Covariates",
+    title="🦭 BIO-MOS",
     header = [pn.Column('','<a href="https://github.com/tekritesh/bio-conservation/tree/main">About</a>')],
-    # sidebar=["""We are interested bleh bleh bleh.\n We will hunt you down if you harm ANY flora or fauna."""],
     accent = '#4f6457',
-    sidebar_width = 280,
     background_color = '#f5f5f5',
     # favicon = 'https://img.icons8.com/external-flaticons-lineal-color-flat-icons/452/external-earth-plants-flaticons-lineal-color-flat-icons-2.png',
     favicon = 'https://img.icons8.com/external-icongeek26-linear-colour-icongeek26/452/external-earth-zoology-icongeek26-linear-colour-icongeek26.png',
@@ -522,17 +509,13 @@ template = pn.template.FastGridTemplate(
 
 ############## specify which portion of the main page grid you want to place a plot in
 
-#sidebar
-# operating_instruction = pn.pane.Markdown(""" # Operating Instruction:
-#                                         """, width=200, height=3000)
 template.main[0:18, 0:2] = pn.Column(
-    pn.Column(
-        "## Hello Earth Dwellers",
+    pn.Column(pn.pane.HTML('<b>Hello Earth Dwellers</b>'),
         pn.Column("""We are interested in integrating and visualizing environmental variables like climate, soil, and 
                                         human interference data alongside the biodiversity data from GBIF. Here you can visualize, query, and download
-                                         the data to further conduct analyses on our precious but dwindling biodiversity.""", width = 260),
-                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(0,0,0,15)),
-                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=500, height = 500, margin=(25,0,0,-250)),
+                                         the data to further conduct analyses on our precious but dwindling biodiversity.""", width = 210),
+                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=350, height = 350, margin=(0,0,0,15)),
+                                            pn.pane.JPG('https://i.pinimg.com/originals/4f/13/08/4f130877108da46e7159b71beaf294a7.jpg', width=350, height = 350, margin=(25,0,0,-175)),
                                             # operating_instruction
                                             ), sizing_mode='stretch_both', height=3000, width=210)
 
@@ -545,11 +528,11 @@ template.main[1:5, 7:12]=pn.Column(pn.Row(species,button_map), plot_scatter)
 
 template.main[1:5, 2:7]= pn.Column(plot_species, height=400)
 
-template.main[5:6, 2:4] = pn.Row(pn.Row(disp_deg_urban, info_urban))
-template.main[5:6, 4:6] = pn.Row(pn.Row(disp_radiance, info_radiance))
-template.main[5:6, 6:8] = pn.Row(pn.Row(disp_avg_temp, info_temp))
-template.main[5:6, 8:10] = pn.Row(pn.Row(disp_precipitation, info_precipitation))
-template.main[5:6, 10:12] = pn.Row(pn.Row(disp_wind_speed, info_wind_speed))
+template.main[5:6, 2:4] = pn.Row(disp_deg_urban, info_urban)
+template.main[5:6, 4:6] = pn.Row(disp_radiance, info_radiance)
+template.main[5:6, 6:8] = pn.Row(disp_avg_temp, info_temp)
+template.main[5:6, 8:10] = pn.Row(disp_precipitation, info_precipitation)
+template.main[5:6, 10:12] = pn.Row(disp_wind_speed, info_wind_speed)
 
 
 template.main[6:9, 2:7] = pn.Column(plot_pie)
@@ -563,7 +546,7 @@ template.main[12:15, 2:7] = pn.Column(plot_invasive_species)
 # template.main[12:15, 8:12] = pn.Column(plot_land_cover, height=200, width = 200)
 
 land_cover_title = pn.pane.HTML("""Land Cover Classification Labels""",
-style={'padding-left': '190px', 'font-size': '16px'}, width=500)
+style={'padding-left': '10px', 'font-size': '16px'}, width=500)
 template.main[12:15, 7:12] = pn.Column(land_cover_title, plot_land_cover, width = 500)
 
 
