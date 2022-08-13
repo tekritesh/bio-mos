@@ -166,9 +166,11 @@ def create_display(df):
 ## function for creating the treemap to show specific point wise values 
 def create_cards(df):
 
-    df = pd.melt(df, value_vars=['snow','wdir','wspd','wpgt','pres','tsun'])
-    if len(df) ==0:
-        df = pd.read_csv('weather.csv')
+    df_temp = pd.melt(df, value_vars=['snow','wdir','wspd','wpgt','pres','tsun'])
+    df['date']=df['eventDate'].to_string(index=False)[:10]
+    df = df.reset_index()
+    if len(df_temp) ==0:
+        df_temp = pd.read_csv('weather.csv')
     #  Refer: https://dev.meteostat.net/formats.html#meteorological-parameters
     variable_names = {'snow':'Snow Depth(mm)',
         'wdir':'Wind Direction(deg)',
@@ -179,7 +181,7 @@ def create_cards(df):
     
     # df = df.replace({"variable":variable_names})
  
-    fig = px.treemap(df, path=['variable'], values='value')
+    fig = px.treemap(df_temp, path=['variable'], values='value')
     fig.data[0].textinfo = 'label+value'
 
     level = 1 # write the number of the last level you have
@@ -191,7 +193,7 @@ def create_cards(df):
     fig.data[0]['textfont']['size'] = 40
 
     fig.update_layout(
-        title='Weather Stats for <Date> & [lat/lng]',
+        title=f'Weather Stats for {df.loc[0,"date"]} & [Lat, Lon]: [{df.loc[0,"decimalLatitude"]}, {df.loc[0,"decimalLongitude"]} ]',
         autosize=False,
         hovermode='closest',
         margin={"r":0,"t":100,"l":0,"b":0},
@@ -233,7 +235,6 @@ def create_pie(df):
         names='variable',
         title='Soil Compositon %',
         color_discrete_sequence=px.colors.qualitative.Antique,
-        # px.colors.sequential.Greens_r,
         hole=.3)
     fig.update_traces(textposition='inside')
     fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
