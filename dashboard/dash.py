@@ -430,8 +430,8 @@ button_map.on_click(update_map)
 
 #instantiate display
 
-info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of urbanization, 0 being uninhabited and 3 being cities"><img src="./assets/img/info-circle.svg" alt="Info"></a>""", width=85)
-info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens, a measure of light pollution"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of urbanization, 0 being uninhabited and 3 being cities"><img src="./assets/img/icons8-info.svg" alt="Info"></a>""", width=85)
+info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens, a measure of light pollution"><img src="/assets/img/info_circle.png" alt="Info"></a>""", width=85)
 info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (°C)"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in mm"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
