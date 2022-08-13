@@ -25,6 +25,8 @@ Next, we describe the various data sources that are currently available in the p
 
 # Data Sources and Decisions
 
+Our proof of concept currently contains two countries, Brazil and United Kingdom, and about 6 months of combined data. Our pipeline, described in [detail below](#data-pipeline-and-automation), can be fired up to run for all the available countries on GBIF and can also be backfilled for as many years as the various data sources are available for. Once backfilled, the idea is to run our backend orchestrator on a daily schedule. Our priority is to integrate our backend with GBIF ([Read more](#future-work)). 
+
 ## Climate
 
 NOAA
@@ -109,7 +111,6 @@ The dynamic world dataset contains near real-time (NRT) land use land cover (LUL
 
 We use a bounding box of 1000m (side length) to grab the dynamic world imagery for a particular location. and The mode of the available land cover labels is used as the representative land cover of the bounding box region. This is to account for spatial resolution of the data and potential errors in GBIF's occurence data latitude and longitude values.
 
-<br>
 
 ## Human Interference
 
@@ -182,20 +183,19 @@ The figure below demonstrates our pipeline run for a select number of days. The 
 
 # Website
 
-We host a website at: 
+We host a website at: <br>
 This website helps to visualize the data we are storing in the backend. The user can query, interact, and download the backend data through this simple to use interface. 
 
 # Future Work
 
-1. Since our goal is to enhance GBIF's capabilies and adoption rate, our next steps will be to find the most optimal way to integrate our modular project with GBIF. As of now we foresee 3 options (listed in descending order of priority):
-    a. We integrate our module with the backend available at GBIF by providing engineering support during the integration.
-    b. We provide the code as a package (R,Python) that can be integrated into an individual user's codebase.
-    c. We host the pipeline as GBIF's complementary entity and populate the backend to be queries by the users.
-2. Extend prototype for all countries (Present prototype is only for Brazil and the Great Britain)
-3. We plan to incorporate additional variable requests that can help with biodiversity modeling
-4. We will also update variables like buffer zone radius, bounding box size if evidence for better thresholds is provided.
+* Since our goal is to enhance GBIF's capabilies and adoption rate, our next steps will be to find the most optimal way to integrate our modular project with GBIF. As of now we foresee 3 options (listed in descending order of priority):
+    1. We integrate our module with the backend available at GBIF by providing engineering support during the integration.
+    2. We provide the code as a package (R,Python) that can be integrated into an individual user's codebase.
+    3. We host the pipeline as GBIF's complementary entity and populate the backend to be queries by the users.
+* Extend prototype for all countries (Present prototype is only for Brazil and the Great Britain)
+* We plan to incorporate additional variable requests that can help with biodiversity modeling
+* We will also update variables like buffer zone radius, bounding box size if evidence for better thresholds is provided.
 
-<br>
 
 ## Resources
 
