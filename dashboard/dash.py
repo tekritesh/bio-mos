@@ -44,6 +44,11 @@ pn.extension(raw_css=[css])
 service_account = '292293468099-compute@developer.gserviceaccount.com'
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "./.cred/gcp_keys.json" 
 credentials = ee.ServiceAccountCredentials(service_account, "./.cred/gcp_keys.json")
+
+
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gbif-challenge-deed5b20a659.json" ##advika computer
+# credentials = ee.ServiceAccountCredentials(service_account, 'gbif-challenge-deed5b20a659.json') ##ritesh advika
+
 ee.Initialize(credentials)
 client = bigquery.Client()
 
@@ -413,11 +418,11 @@ button_map.on_click(update_map)
 
 #instantiate display
 
-info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of Urbanization"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
-info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
-info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (C°)"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_urban = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average degree of urbanization, 0 being uninhabited and 3 being cities"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_radiance = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Radiance value measured in lumens, a measure of light pollution"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_temp = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Average Temperature (°C)"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 info_wind_speed = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Wind Speed in m/s"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
-info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in cm"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
+info_precipitation = pn.pane.HTML("""<a href="#" data-toggle="tooltip" title="Rainfall in mm"><img src="/assets/img/info-circle.svg" alt="Info"></a>""", width=85)
 
 
 disp_deg_urban = pn.indicators.Number(
