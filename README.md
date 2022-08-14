@@ -30,8 +30,6 @@ Our proof of concept currently contains two countries, Brazil and United Kingdom
 
 ## Climate
 
-NOAA
-
 Climate variables like temperature, precipitation, pressure are crucial to any sort of biodiversity modeling. 
 Climate variables can be analyzed to find impact of drastic climate events or long term global warming effects on our biodiversity populations as well as migratory patterns. We use data provided by the [National Oceanic and Atmospheric Administration (NOAA)](https://www.noaa.gov/) due to it's quality, coverage, and popular adoption.
 
