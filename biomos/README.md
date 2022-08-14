@@ -29,6 +29,15 @@ poetry run pytest
 ```
 ![image](https://user-images.githubusercontent.com/65660549/179351333-e04b4352-876b-4901-bb26-76e3381e8ed6.png)
 
+#### [Package Functionalities](https://github.com/tekritesh/bio-mos/blob/main/README.md)
+ - GBIF Species Occurence
+ - Human Interference
+ - Soil Composition
+ - Climate
+ - Land Cover Labels
+
+#### Package Usage
+  [Refer](https://github.com/tekritesh/bio-mos/blob/main/biomos/tests/test_biomos.py)
 
 #### Using the poetry env to use for Jupyter
 Get the env variable name
