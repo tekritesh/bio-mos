@@ -29,6 +29,17 @@ poetry run pytest
 ```
 ![image](https://user-images.githubusercontent.com/65660549/179351333-e04b4352-876b-4901-bb26-76e3381e8ed6.png)
 
+#### Package Functions
+- GBIF Occurences
+- Climate Covariates
+- Soil Composition Covariates
+- Human Interference 
+- Land Cover Types
+
+
+
+#### Package Usage
+Refer to ```tests/test_biomos.py```  for usage
 
 #### Using the poetry env to use for Jupyter
 Get the env variable name
