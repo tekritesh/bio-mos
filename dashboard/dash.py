@@ -510,12 +510,12 @@ template.main[0:17, 0:2] = pn.Column(
                                             # operating_instruction
                                             ), sizing_mode='stretch_both', height=3000, width=210)
 
-# static_text = pn.widgets.StaticText(name='Static Text', value='A string', width = 200)
+static_text = pn.widgets.StaticText(name="Note", value="Click on an Occurence to load it's covariate plots", width = 400)
 # template.main[:1, 2:] = pn.Column(static_text,pn.Row(start_date, end_date, country, button, height=10))
 
 template.main[:1, 2:] = pn.Column("",pn.Row(start_date, end_date, country, button, height=10))
 
-template.main[1:5, 7:12]=pn.Column(pn.Row(species,button_map), plot_scatter)
+template.main[1:5, 7:12]=pn.Column(pn.Row(species,button_map),static_text,plot_scatter)
 
 template.main[1:5, 2:7]= pn.Column(plot_species, height=400)
 
