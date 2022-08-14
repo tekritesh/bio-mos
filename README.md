@@ -184,8 +184,11 @@ The figure below demonstrates our pipeline run for a select number of days. The 
 
 # Website
 
-We host a website at: <br>
+We host a website at: [Website Link](http://35.185.242.196:5006/dash)
+<br>
 This website helps to visualize the data we are storing in the backend. The user can query, interact, and download the backend data through this simple to use interface. 
+<br>
+[Tutorial video on Youtube](https://www.youtube.com/watch?v=JLNVnwIx5GE)
 
 # Future Work
 
