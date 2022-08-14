@@ -1,15 +1,16 @@
-# 🌏 GBIF powered by covariates
-> &#x20;🐸 Open-access biodiversity data
+# 🐾 BIO-MOS
+> &#x20;🐸 GBIF powered by covariates, Open-access biodiversity data
 
 # Documentation and Caveats
 
 This document serves to explain the assumptions and design decisions that brought forward this product. The document is organized as follows:
 
-- Objective
-- Data Sources and decisions
-- Data Pipeline and Automation
-- User Experience
-- ✨Future Work
+- [Objective](#objective)
+- [Data Sources and Decisions](#data-sources-and-decisions)
+- [Data Pipeline and Automation](#data-pipeline-and-automation)
+- [User Experience](#website)
+- [✨Future Work](#future-work)
+- [Directory Structure and Usage Instructions](#directory-structure-and-usage-instructions)
 
 # Objective
 
@@ -28,8 +29,6 @@ Next, we describe the various data sources that are currently available in the p
 Our proof of concept currently contains two countries, Brazil and United Kingdom, and about 6 months of combined data. Our pipeline, described in [detail below](#data-pipeline-and-automation), can be fired up to run for all the available countries on GBIF and can also be backfilled for as many years as the various data sources are available for. Once backfilled, the idea is to run our backend orchestrator on a daily schedule. Our priority is to integrate our backend with GBIF ([Read more](#future-work)). 
 
 ## Climate
-
-NOAA
 
 Climate variables like temperature, precipitation, pressure are crucial to any sort of biodiversity modeling. 
 Climate variables can be analyzed to find impact of drastic climate events or long term global warming effects on our biodiversity populations as well as migratory patterns. We use data provided by the [National Oceanic and Atmospheric Administration (NOAA)](https://www.noaa.gov/) due to it's quality, coverage, and popular adoption.
@@ -183,8 +182,11 @@ The figure below demonstrates our pipeline run for a select number of days. The 
 
 # Website
 
-We host a website at: <br>
+We host a website at: [Website Link](http://35.185.242.196:5006/dash)
+<br>
 This website helps to visualize the data we are storing in the backend. The user can query, interact, and download the backend data through this simple to use interface. 
+<br>
+[Tutorial video on Youtube](https://www.youtube.com/watch?v=JLNVnwIx5GE)
 
 # Future Work
 
@@ -196,6 +198,47 @@ This website helps to visualize the data we are storing in the backend. The user
 * We plan to incorporate additional variable requests that can help with biodiversity modeling
 * We will also update variables like buffer zone radius, bounding box size if evidence for better thresholds is provided.
 
+
+## Directory Structure and Usage Instructions
+
+```
+bio-conservation
+├─ .gitignore
+├─ README.md
+├─ airflow_pipeline
+│  ├─ README.md
+│  └─ dags
+│     ├─ bigquery_load.py
+│     ├─ gbif_modules.py
+│     └─ main_pipeline.py
+├─ assets
+├─ biomos
+│  ├─ README.md
+│  ├─ biomos
+│  │  ├─ __init__.py
+│  │  ├─ climate.py
+│  │  ├─ human_interference.py
+│  │  ├─ land_cover.py
+│  │  ├─ soil_info.py
+│  │  └─ species.py
+│  ├─ poetry.lock
+│  ├─ pyproject.toml
+│  └─ tests
+│     ├─ __init__.py
+│     └─ test_biomos.py
+├─ dashboard
+│  ├─ README.md
+│  ├─ assets
+│  │  ├─ favicon.png
+│  │  ├─ gbif_combined.csv
+│  │  ├─ js
+│  │  │  ├─ bootstrap.bundle.js.map
+│  │  │  └─ bootstrap.bundle.min.js
+│  │  ├─ side_bar.jpg
+│  │  ├─ side_bar_2.jpg
+│  │  └─ soil_temp.csv
+│  ├─ dash.py
+```
 
 ## Resources
 
